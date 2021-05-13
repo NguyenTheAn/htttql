@@ -21,4 +21,5 @@ urlpatterns = [
     path('signup', SignupViews.as_view(), name = "signup"),
     path('signin', SigninViews.as_view(), name = "signin"),
     path('users', ListUsers.as_view(), name = "listuser"),
+    path('edit', EditInfo.as_view(), name = "editinfo"),
 ]

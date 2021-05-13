@@ -1,5 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+import random
 from .models import *
 from .helpers.common import *
 
@@ -22,16 +23,13 @@ class SignupViews(APIView):
             return json_format(code = 400, message = "Account exist")
 
         user = User()
-        if user.userID is None:
-            user.userID = randomDigits(8)
-        
+        user.id = randomDigits(8)
         user.username = data["username"]
         user.password = data["password"]
         user.email = data["email"]
-        if "address" in data.keys():
-            user.address = data["address"]
-        if "sex" in data.keys():
-            user.sex = data["sex"]
+        user.phone = data['phone']
+        user.sex = data['sex']
+        user.address = data["address"]
         user.save()
         
         return json_format(code = 200, message = "Success")
@@ -46,3 +44,18 @@ class SigninViews(APIView):
                 return json_format(code = 200, message = "Login successfully")
         
         return json_format(code = 400, message = "Wrong username or password")
+
+class EditInfo(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        user  = User.objects.get(id=data['id'])
+        
+        user.username = data["username"]
+        user.password = data["password"]
+        user.email = data["email"]
+        user.phone = data['phone']
+        user.sex = data['sex']
+        user.address = data["address"]
+        user.save()
+
+        return json_format(code = 200, message = "Success")
