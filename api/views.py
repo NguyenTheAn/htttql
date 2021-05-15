@@ -3,6 +3,7 @@ from rest_framework.response import Response
 import random
 from .models import *
 from .helpers.common import *
+from datetime import datetime
 
 def randomDigits(digits):
     lower = 10**(digits-1)
@@ -14,16 +15,23 @@ class ListUsers(APIView):
         usernames = [user.userID for user in User.objects.all()]
         return json_format(code = 200, message = "Success", data = usernames)
 
-class SignupViews(APIView):
+class CreateAccount(APIView):
     
     def post(self, request, format=None):
-        usernames = [user.username for user in User.objects.all()]
+        users = [user for user in User.objects.all()]
+        usernames = [user.username for user in users]
+        userids = [user.id for user in users]
         data = request.data
+        
         if data["username"] in usernames:
             return json_format(code = 400, message = "Account exist")
 
         user = User()
-        user.id = randomDigits(8)
+        while True:
+            id = randomDigits(8)
+            if id not in userids:
+                user.id = id
+                break
         user.username = data["username"]
         user.password = data["password"]
         user.email = data["email"]
@@ -31,6 +39,18 @@ class SignupViews(APIView):
         user.sex = data['sex']
         user.address = data["address"]
         user.save()
+
+        if data['role'] == "Manager":
+            branch = Branch.objects.get(id=data['branch_id'])
+            m = Manager(userid = user, created = datetime.now(), branchid = branch)
+            m.save()
+        elif data['role'] == "Chiefmanager":
+            cm = Chiefmanager(userid = user, cardid = data['card_id'])
+            cm.save()
+        elif data['role'] == "Accountant":
+            branch = Branch.objects.get(id=data['branch_id'])
+            a = Accountant(created = datetime.now(), team = data['team'], userid = user, branchid = branch)
+            a.save()
         
         return json_format(code = 200, message = "Success")
 
@@ -57,5 +77,13 @@ class EditInfo(APIView):
         user.sex = data['sex']
         user.address = data["address"]
         user.save()
+
+        return json_format(code = 200, message = "Success")
+
+class DeleteAcc(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        user  = User.objects.get(id=data['user_id'])
+        print(user.objects.all())
 
         return json_format(code = 200, message = "Success")

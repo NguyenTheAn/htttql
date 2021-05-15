@@ -18,7 +18,8 @@ from django.urls import path, include
 from .views import *
 
 urlpatterns = [
-    path('signup', SignupViews.as_view(), name = "signup"),
+    path('create_acc', CreateAccount.as_view(), name = "create_acc"),
+    path('delete_acc', DeleteAcc.as_view(), name = "delete_acc"),
     path('signin', SigninViews.as_view(), name = "signin"),
     path('users', ListUsers.as_view(), name = "listuser"),
     path('edit', EditInfo.as_view(), name = "editinfo"),
