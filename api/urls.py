@@ -26,4 +26,5 @@ urlpatterns = [
     path('get_branch', GetListBranch.as_view(), name = "get_branch"),
     path('add_branch', AddBranch.as_view(), name = "add_branch"),
     path('delete_branch', DeleteBranch.as_view(), name = "delete_branch"),
+    path('edit_branch', EditInfoBranch.as_view(), name = "edit_branch"),
 ]
