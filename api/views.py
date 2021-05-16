@@ -292,4 +292,54 @@ class DeleteProduct(APIView):
         data = request.data
         product = Product.objects.get(id=data["id"])
         product.delete()
+class GetDepartment(APIView):
+    def get(self, request, format=None):
+        departments = [{'department_id': department.id,
+                        'branch_id': department.branchid.id,
+                        'department_name': department.name,
+                        'department_numofemployees': department.numofemployees} for department in Department.objects.all()]
+
+        return json_format(code = 200, message = "Success", data = departments)
+
+class AddDepartment(APIView):
+    def post(self, request, format=None):
+        departments = [department for department in Department.objects.all()]
+        department_name = [department.name for department in departments]
+        department_id = [department.id for department in departments]
+        data = request.data
+        
+        if data["department_name"] in department_name:
+            return json_format(code = 400, message = "Department exist")
+
+        department = Department()
+        while True:
+            id = randomDigits(8)
+            if id not in department_id:
+                department.id = id
+                break
+        department.name = data['department_name']
+        branch = Branch.objects.get(id=data['branch_id'])
+        department.branchid = branch
+        department.numofemployees = 0
+        department.save()
+
+        return json_format(code = 200, message = "Success")
+
+class EditInfoDepartment(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        department  = Department.objects.get(id=data['department_id'])
+        
+        department.name = data["department_name"]
+        branch = Branch.objects.get(id=data['branch_id'])
+        department.brandid = branch
+        department.save()
+
+        return json_format(code = 200, message = "Success")
+
+class DeleteDepartment(APIView):
+    def post(self, request, format=None):
+        data = request.data
+        department = Department.objects.get(id=data["department_id"])
+        department.delete()
         return json_format(code = 200, message = "Success")

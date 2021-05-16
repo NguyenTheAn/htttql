@@ -42,4 +42,10 @@ urlpatterns = [
     path('add_branch', AddBranch.as_view(), name = "add_branch"),
     path('delete_branch', DeleteBranch.as_view(), name = "delete_branch"),
     path('edit_branch', EditInfoBranch.as_view(), name = "edit_branch"),
+
+    # department
+    path('add_department', AddDepartment.as_view(), name = "add_department"),
+    path('get_department', GetDepartment.as_view(), name = "get_department"),
+    path('edit_department', EditInfoDepartment.as_view(), name = "edit_department"),
+    path('delete_department', DeleteDepartment.as_view(), name = "delete_department"),
 ]
