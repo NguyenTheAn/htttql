@@ -36,4 +36,10 @@ urlpatterns = [
     path('edit_product_info', EditProductInfo.as_view(), name = "edit_product_info"),
     path('delete_product', DeleteProduct.as_view(), name = "delete_product"),
     path('getproducts', ListProduct.as_view(), name = "getproducts"),
+
+    # branch
+    path('get_branch', GetListBranch.as_view(), name = "get_branch"),
+    path('add_branch', AddBranch.as_view(), name = "add_branch"),
+    path('delete_branch', DeleteBranch.as_view(), name = "delete_branch"),
+    path('edit_branch', EditInfoBranch.as_view(), name = "edit_branch"),
 ]
