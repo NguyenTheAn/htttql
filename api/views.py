@@ -167,40 +167,6 @@ class DeletePartner(APIView):
         partner.delete()
         return json_format(code = 200, message = "Success")
 
-class AddProduct(APIView):
-    def post(self, request, format = None):
-        products = [product for product in Product.objects.all()]
-
-        productnames = [product.username for product in products]
-        productids = [product.id for product in products]
-        data = request.data
-        
-        if data["partnername"] in productnames:
-            return json_format(code = 400, message = "Partner exist")
-
-        product = Product()
-        while True:
-            id = randomDigits(8)
-            if id not in productids:
-                product.id = id
-                break
-        
-        branch_id = data['branch_id']
-        branch = Branch.objects.get(id=branch_id)
-        partner_id = data['partner_id']
-        partner = Partner.objects.get(id=partner_id)
-
-        product.partnerid = partner
-        product.branchid = branch
-        product.name = data['name']
-        product.type = data['type']
-        product.price = data['price']
-        product.category = data['category']
-        product.numinbranch = data['numinbranch']
-        product.save()
-
-        return json_format(code = 200, message = "Success")
-
 class GetListBranch(APIView):
     def get(self, request, format=None):
         branchs = [{'branch_id': branch.id,
@@ -246,4 +212,84 @@ class EditInfoBranch(APIView):
         branch.location = data["branch_location"]
         branch.save()
 
+        return json_format(code = 200, message = "Success")
+
+class AddProduct(APIView):
+    def post(self, request, format = None):
+        products = [product for product in Product.objects.all()]
+
+        productnames = [product.username for product in products]
+        productids = [product.id for product in products]
+        data = request.data
+        
+        if data["name"] in productnames:
+            return json_format(code = 400, message = "Product exist")
+
+        product = Product()
+        while True:
+            id = randomDigits(8)
+            if id not in productids:
+                product.id = id
+                break
+        
+        branch_id = data['branch_id']
+        branch = Branch.objects.get(id=branch_id)
+        partner_id = data['partner_id']
+        partner = Partner.objects.get(id=partner_id)
+
+        product.partnerid = partner
+        product.branchid = branch
+        product.name = data['name']
+        product.type = data['type']
+        product.price = data['price']
+        product.category = data['category']
+        product.numinbranch = data['numinbranch']
+        product.save()
+
+        return json_format(code = 200, message = "Success")
+
+class ListProduct(APIView):
+    def get(self, request, format=None):
+        products = [product for product in Product.objects.all()]
+        return_data = []
+        for product in products:
+            tmp = {}
+            tmp['product_id'] = product.id
+            tmp['partner_id'] = product.partnerid.id
+            tmp['branch_id'] = product.branchid.id
+            tmp['name'] = product.name
+            tmp['type'] = product.type
+            tmp['price'] = product.price
+            tmp['category'] = product.category
+            tmp['numinbranch'] = product.numinbranch
+            return_data.append(tmp)
+
+        return json_format(code = 200, message = "Success", data = return_data)
+
+class EditProductInfo(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        product  = Product.objects.get(id=data['id'])
+
+        branch_id = data['branch_id']
+        branch = Branch.objects.get(id=branch_id)
+        partner_id = data['partner_id']
+        partner = Partner.objects.get(id=partner_id)
+        
+        product.partnerid = partner
+        product.branchid = branch
+        product.name = data['name']
+        product.type = data['type']
+        product.price = data['price']
+        product.category = data['category']
+        product.numinbranch = data['numinbranch']
+        product.save()
+
+        return json_format(code = 200, message = "Success")
+
+class DeleteProduct(APIView):
+    def post(self, request, format=None):
+        data = request.data
+        product = Product.objects.get(id=data["id"])
+        product.delete()
         return json_format(code = 200, message = "Success")
