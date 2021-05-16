@@ -87,3 +87,50 @@ class DeleteAcc(APIView):
         print(user.objects.all())
 
         return json_format(code = 200, message = "Success")
+
+class GetListBranch(APIView):
+    def get(self, request, format=None):
+        branchs = [{'branch_id': branch.id,
+                    'branch_name': branch.name,
+                    'branch_location': branch.location} for branch in Branch.objects.all()]
+        return json_format(code = 200, message = "Success", data = branchs)
+
+class AddBranch(APIView):
+    def post(self, request, format=None):
+        branchs = [branch for branch in Branch.objects.all()]
+        branch_name = [branch.name for branch in branchs]
+        branch_id = [branch.id for branch in branchs]
+        data = request.data
+        
+        if data["branch_name"] in branch_name:
+            return json_format(code = 400, message = "Branch exist")
+
+        branch = Branch()
+        while True:
+            id = randomDigits(8)
+            if id not in branch_id:
+                branch.id = id
+                break
+        branch.name = data['branch_name']
+        branch.location = data['branch_location']
+        branch.save()
+
+        return json_format(code = 200, message = "Success")
+
+class DeleteBranch(APIView):
+    def post(self, request, format=None):
+        data = request.data
+        branch = Branch.objects.get(id=data["branch_id"])
+        branch.delete()
+        return json_format(code = 200, message = "Success")
+
+class EditInfoBranch(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        branch  = Branch.objects.get(id=data['branch_id'])
+        
+        branch.name = data["branch_name"]
+        branch.location = data["branch_location"]
+        branch.save()
+
+        return json_format(code = 200, message = "Success")

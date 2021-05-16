@@ -23,4 +23,7 @@ urlpatterns = [
     path('signin', SigninViews.as_view(), name = "signin"),
     path('users', ListUsers.as_view(), name = "listuser"),
     path('edit', EditInfo.as_view(), name = "editinfo"),
+    path('get_branch', GetListBranch.as_view(), name = "get_branch"),
+    path('add_branch', AddBranch.as_view(), name = "add_branch"),
+    path('delete_branch', DeleteBranch.as_view(), name = "delete_branch"),
 ]
