@@ -31,4 +31,8 @@ urlpatterns = [
     path('get_department', GetDepartment.as_view(), name = "get_department"),
     path('edit_department', EditInfoDepartment.as_view(), name = "edit_department"),
     path('delete_department', DeleteDepartment.as_view(), name = "delete_department"),
+    path('add_employee', AddEmployee.as_view(), name = "add_employee"),
+    path('get_employee', GetEmployee.as_view(), name = "get_employee"),
+    path('delete_employee', DeleteEmployee.as_view(), name = "delete_employee"),
+    path('edit_employee', EditInfoEmployee.as_view(), name = "edit_employee"),
 ]

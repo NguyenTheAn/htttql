@@ -186,3 +186,81 @@ class DeleteDepartment(APIView):
         department = Department.objects.get(id=data["department_id"])
         department.delete()
         return json_format(code = 200, message = "Success")
+
+class AddEmployee(APIView):
+    def post(self, request, format=None):
+        employees = [employee for employee in Employee.objects.all()]
+        employee_id = [employee.id for employee in employees]
+        data = request.data
+
+        employee = Employee()
+        while True:
+            id = randomDigits(8)
+            if id not in employee_id:
+                employee.id = id
+                break
+                
+        department = Department.objects.get(id=data['department_id'])
+        department.numofemployees += 1
+        employee.departmentid = department
+
+        employee.name = data['employee_name']
+        employee.phone = data['employee_phone']
+        employee.email = data['employee_email']
+        employee.address = data['employee_address']
+        employee.sex = data['employee_sex']
+        employee.exp = data['employee_exp']
+
+        employee.save()
+        department.save()
+
+        return json_format(code = 200, message = "Success")
+
+
+class GetEmployee(APIView):
+    def get(self, request, format=None):
+        employees = [{'employee_id': employee.id,
+                      'department_id': employee.departmentid.id,
+                      'employee_name': employee.name,
+                      'employee_phone': employee.phone,
+                      'employee_email': employee.email,
+                      'employee_address': employee.address,
+                      'employee_sex': employee.sex,
+                      'employee_exp': employee.exp} for employee in Employee.objects.all()]
+
+        return json_format(code = 200, message = "Success", data = employees)
+
+class DeleteEmployee(APIView):
+    def post(self, request, format=None):
+        data = request.data
+        employee = Employee.objects.get(id=data["employee_id"])
+        old_department = Department.objects.get(id=employee.departmentid.id)
+        old_department.numofemployees -= 1
+        old_department.save()
+        employee.delete()
+        return json_format(code = 200, message = "Success")
+
+class EditInfoEmployee(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        employee  = Employee.objects.get(id=data['employee_id'])
+        
+        employee.name = data['employee_name']
+        employee.phone = data['employee_phone']
+        employee.email = data['employee_email']
+        employee.address = data['employee_address']
+        employee.sex = data['employee_sex']
+        employee.exp = data['employee_exp']
+
+        old_department = Department.objects.get(id=employee.departmentid.id)
+        old_department.numofemployees -= 1
+        old_department.save()
+
+        department = Department.objects.get(id=data['department_id'])
+        department.numofemployees += 1
+        employee.departmentid = department
+        
+        department.save()
+        employee.save()
+
+        return json_format(code = 200, message = "Success")
