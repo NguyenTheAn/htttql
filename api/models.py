@@ -87,6 +87,8 @@ class Employee(models.Model):
     address = models.CharField(db_column='Address', max_length=255, blank=True, null=True)  # Field name made lowercase.
     sex = models.CharField(db_column='Sex', max_length=255, blank=True, null=True)  # Field name made lowercase.
     exp = models.FloatField(db_column='Exp')  # Field name made lowercase.
+    amount = models.FloatField(db_column='Amount', blank=True, null=True)  # Field name made lowercase.
+    coef = models.FloatField(db_column='Coef', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         db_table = 'employee'
@@ -185,11 +187,7 @@ class Salary(models.Model):
     id = models.CharField(db_column='ID', primary_key=True, max_length=255)  # Field name made lowercase.
     employeeid = models.ForeignKey(Employee, models.CASCADE, db_column='EmployeeID')  # Field name made lowercase.
     salarytableid = models.ForeignKey('Salarytable', models.CASCADE, db_column='SalaryTableID')  # Field name made lowercase.
-    amount = models.FloatField(db_column='Amount')  # Field name made lowercase.
-    adding = models.FloatField(db_column='Adding')  # Field name made lowercase.
-    deducting = models.FloatField(db_column='Deducting')  # Field name made lowercase.
-    sum = models.FloatField(db_column='Sum')  # Field name made lowercase.
-    coef = models.FloatField(db_column='Coef')  # Field name made lowercase.
+    fine = models.FloatField(db_column='Fine', blank=True, null=True)  # Field name made lowercase.
     reward = models.FloatField(db_column='Reward')  # Field name made lowercase.
 
     class Meta:
@@ -201,6 +199,8 @@ class Salarytable(models.Model):
     accountantuserid = models.ForeignKey(Accountant, models.CASCADE, db_column='AccountantUserID')  # Field name made lowercase.
     total = models.FloatField(db_column='Total')  # Field name made lowercase.
     note = models.CharField(db_column='Note', max_length=255, blank=True, null=True)  # Field name made lowercase.
+    startdate = models.DateField(db_column='StartDate', blank=True, null=True)
+    enddate = models.DateField(db_column='EndDate', blank=True, null=True)
 
     class Meta:
         db_table = 'salarytable'

@@ -4,6 +4,7 @@ import random
 from .models import *
 from .helpers.common import *
 from datetime import datetime
+import numpy as np
 
 def randomDigits(digits):
     lower = 10**(digits-1)
@@ -69,10 +70,16 @@ class SigninViews(APIView):
     
     def post(self, request, format=None):
         users = [user for user in User.objects.all()]
+        type_acc = np.array(["Manager", "Chiefmanager", "Accountant"])
         data = request.data
         for user in users:
+            
             if user.username == data["username"] and user.password == data["password"]:
-                return json_format(code = 200, message = "Login successfully")
+                list1 = np.array([Manager.objects.filter(userid=user.id).count(), Chiefmanager.objects.filter(userid=user.id).count(), \
+                    Accountant.objects.filter(userid=user.id).count()])
+                data = {"id": user.id,
+                        "account_type" : type_acc[list1 != 0][0]}
+                return json_format(code = 200, message = "Login successfully", data = data)
         
         return json_format(code = 400, message = "Wrong username or password")
 
@@ -343,3 +350,19 @@ class DeleteDepartment(APIView):
         department = Department.objects.get(id=data["department_id"])
         department.delete()
         return json_format(code = 200, message = "Success")
+
+class AddProductBill(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        user = Accountant.objects.get(userid=data['userid'])
+        list_product = data['list_product']
+        
+        doc = Document()
+        doc.accountantuserid = user
+        doc.id = randomDigits(8)
+        doc.type = "bill"
+        doc.amount = data['amount']
+        doc.time = datetime.now()
+        doc.name = data["name"]
+        doc.content = data['content']
+        doc.amount = data['amount']
