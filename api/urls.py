@@ -48,4 +48,9 @@ urlpatterns = [
     path('get_department', GetDepartment.as_view(), name = "get_department"),
     path('edit_department', EditInfoDepartment.as_view(), name = "edit_department"),
     path('delete_department', DeleteDepartment.as_view(), name = "delete_department"),
+
+    # Bill
+    path('addbill', AddBill.as_view(), name = "add_bill"),
+    path('getbill', GetBill.as_view(), name = "get_bill"),
+
 ]

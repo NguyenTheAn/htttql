@@ -7,10 +7,18 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 
+# doi gen id tu nho den lon
+
+# branch name -> phone
+# thêm admin
+# product in_out price and date time
+# LenRec thêm lãi
+# Accountant bỏ team
+# bill time dung .now
 
 class Accountant(models.Model):
     created = models.DateField(db_column='Created', blank=True, null=True)  # Field name made lowercase.
-    team = models.IntegerField(db_column='Team')  # Field name made lowercase.
+    # team = models.IntegerField(db_column='Team')  # Field name made lowercase.
     userid = models.OneToOneField('User', models.CASCADE, db_column='UserID', primary_key=True)  # Field name made lowercase.
     branchid = models.ForeignKey('Branch', models.CASCADE, db_column='BranchID')  # Field name made lowercase.
 
@@ -30,7 +38,7 @@ class Balancerec(models.Model):
 
 class Bill(models.Model):
     billtype = models.CharField(db_column='BillType', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    tax = models.TextField(db_column='Tax')  # Field name made lowercase. This field type is a guess.
+    tax = models.CharField(db_column='Tax', max_length=255, blank=True, null=True)  # Field name made lowercase. This field type is a guess.
     documentid = models.OneToOneField('Document', models.CASCADE, db_column='DocumentID', primary_key=True)  # Field name made lowercase.
     partnerid = models.ForeignKey('Partner', models.CASCADE, db_column='PartnerID')  # Field name made lowercase.
 
@@ -40,7 +48,7 @@ class Bill(models.Model):
 
 class Branch(models.Model):
     id = models.CharField(db_column='ID', primary_key=True, max_length=255)  # Field name made lowercase.
-    name = models.CharField(db_column='Name', max_length=255, blank=True, null=True)  # Field name made lowercase.
+    phone = models.CharField(db_column='Name', max_length=255, blank=True, null=True)  # Field name made lowercase.
     location = models.CharField(db_column='Location', max_length=255, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
@@ -48,7 +56,6 @@ class Branch(models.Model):
 
 
 class Chiefmanager(models.Model):
-    cardid = models.CharField(db_column='CardID', max_length=255, blank=True, null=True)  # Field name made lowercase.
     userid = models.OneToOneField('User', models.CASCADE, db_column='UserID', primary_key=True)  # Field name made lowercase.
 
     class Meta:
@@ -113,6 +120,7 @@ class Lendrec(models.Model):
     desc = models.CharField(db_column='Desc', max_length=255, blank=True, null=True)  # Field name made lowercase.
     amount = models.FloatField(db_column='Amount')  # Field name made lowercase.
     time = models.DateField(db_column='Time', blank=True, null=True)  # Field name made lowercase.
+    interest_rate = models.FloatField(db_column='InterestRate', blank=True, null=True) 
 
     class Meta:
         db_table = 'lendrec'
@@ -146,9 +154,7 @@ class Product(models.Model):
     branchid = models.ForeignKey(Branch, models.CASCADE, db_column='BranchID')  # Field name made lowercase.
     partnerid = models.ForeignKey(Partner, models.CASCADE, db_column='PartnerID')  # Field name made lowercase.
     name = models.CharField(db_column='Name', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    type = models.CharField(db_column='Type', max_length=255, blank=True, null=True)  # Field name made lowercase.
     price = models.FloatField(db_column='Price')  # Field name made lowercase.
-    category = models.CharField(db_column='Category', max_length=255, blank=True, null=True)  # Field name made lowercase.
     numinbranch = models.IntegerField(db_column='NumInBranch')  # Field name made lowercase.
 
     class Meta:
@@ -158,6 +164,7 @@ class Product(models.Model):
 class ProductBill(models.Model):
     productid = models.OneToOneField(Product, models.CASCADE, db_column='ProductID', primary_key=True)  # Field name made lowercase.
     billdocumentid = models.ForeignKey(Bill, models.CASCADE, db_column='BillDocumentID')  # Field name made lowercase.
+    numinbill = models.IntegerField(db_column='NumberInBill', blank=True, null=True)
 
     class Meta:
         db_table = 'product_bill'
@@ -196,7 +203,7 @@ class Salary(models.Model):
 
 class Salarytable(models.Model):
     id = models.CharField(db_column='ID', primary_key=True, max_length=255)  # Field name made lowercase.
-    accountantuserid = models.ForeignKey(Accountant, models.CASCADE, db_column='AccountantUserID')  # Field name made lowercase.
+    # accountantuserid = models.ForeignKey(Accountant, models.CASCADE, db_column='AccountantUserID')  # Field name made lowercase.
     total = models.FloatField(db_column='Total')  # Field name made lowercase.
     note = models.CharField(db_column='Note', max_length=255, blank=True, null=True)  # Field name made lowercase.
     startdate = models.DateField(db_column='StartDate', blank=True, null=True)
