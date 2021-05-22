@@ -370,6 +370,7 @@ class AddBuyBill(APIView):
     def post(self, request, format = None):
         data = request.data
         user = Accountant.objects.get(userid=data['userid'])
+        branch = Branch.objects.get(id = data['branchid'])
 
         list_product = data['list_product']
         number_product = data['number_product']
@@ -386,12 +387,14 @@ class AddBuyBill(APIView):
         doc.save()
 
         bill = BuyBill()
+        bill.branchid = branch
         bill.documentid = doc
         bill.payment = data['payment']
         bill.save()
 
         for product, num in zip(products, number_product):
             product.inprice = data['amount']
+            product.numinbranch += num
             product.save()
             id = randomDigits(8, len(ProductBuyBill.objects.all()))
             productbill = ProductBuyBill(id = id, productid = product, buybilldocumentid = bill, numinbill = num)
@@ -437,6 +440,7 @@ class AddSellBill(APIView):
     def post(self, request, format = None):
         data = request.data
         user = Accountant.objects.get(userid=data['userid'])
+        branch = Branch.objects.get(id = data['branchid'])
 
         list_product = data['list_product']
         number_product = data['number_product']
@@ -452,6 +456,7 @@ class AddSellBill(APIView):
         doc.save()
 
         bill = SellBill()
+        bill.branchid = branch
         bill.documentid = doc
         bill.customer = data['customer']
         bill.cusaddress = data['cusaddress']
@@ -462,6 +467,8 @@ class AddSellBill(APIView):
         bill.save()
 
         for product, num in zip(products, number_product):
+            product.numinbranch -= num
+            product.save()
             id = randomDigits(8, len(ProductSellBill.objects.all()))
             productbill = ProductSellBill(id = id, productid = product, sellbilldocumentid = bill, numinbill = num)
             productbill.save()
