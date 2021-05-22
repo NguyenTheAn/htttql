@@ -49,8 +49,14 @@ urlpatterns = [
     path('edit_department', EditInfoDepartment.as_view(), name = "edit_department"),
     path('delete_department', DeleteDepartment.as_view(), name = "delete_department"),
 
-    # Bill
-    path('addbill', AddBill.as_view(), name = "add_bill"),
-    path('getbill', GetBill.as_view(), name = "get_bill"),
+    # buy Bill
+    path('addbuybill', AddBuyBill.as_view(), name = "add_buy_bill"),
+    path('getbuybill', GetBuyBill.as_view(), name = "get_buy_bill"),
+    path('deletedocument', DeleteDocument.as_view(), name = "delete_document"),
+
+    # sell bill
+    path('addsellbill', AddSellBill.as_view(), name = "add_sell_bill"),
+    path('getsellbill', GetSellBill.as_view(), name = "get_sell_bill"),
+
 
 ]

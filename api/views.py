@@ -68,7 +68,7 @@ class CreateAccount(APIView):
             cm.save()
         elif data['role'] == "Accountant":
             branch = Branch.objects.get(id=data['branch_id'])
-            a = Accountant(created = datetime.now(), team = data['team'], userid = user, branchid = branch)
+            a = Accountant(created = datetime.now(), userid = user, branchid = branch)
             a.save()
         
         return json_format(code = 200, message = "Success")
@@ -193,7 +193,7 @@ class GetListBranch(APIView):
     def get(self, request, format=None):
         data = request.data
         branchs = [{'branch_id': branch.id,
-                    'branch_name': branch.name,
+                    'branch_phone': branch.phone,
                     'branch_location': branch.location} for branch in Branch.objects.all()]
         if "id" in data.keys():
             branchs = Branch.objects.get(id = data['id'])
@@ -202,20 +202,11 @@ class GetListBranch(APIView):
 class AddBranch(APIView):
     def post(self, request, format=None):
         branchs = [branch for branch in Branch.objects.all()]
-        branch_name = [branch.name for branch in branchs]
-        branch_id = [branch.id for branch in branchs]
         data = request.data
-        
-        if data["branch_name"] in branch_name:
-            return json_format(code = 400, message = "Branch exist")
 
         branch = Branch()
-        while True:
-            id = randomDigits(8, len(branchs))
-            if id not in branch_id:
-                branch.id = id
-                break
-        branch.name = data['branch_name']
+        branch.id = randomDigits(8, len(branchs))
+        branch.phone = data['branch_phone']
         branch.location = data['branch_location']
         branch.save()
 
@@ -242,20 +233,14 @@ class EditInfoBranch(APIView):
 class AddProduct(APIView):
     def post(self, request, format = None):
         products = [product for product in Product.objects.all()]
-
         productnames = [product.name for product in products]
-        productids = [product.id for product in products]
         data = request.data
         
         if data["name"] in productnames:
             return json_format(code = 400, message = "Product exist")
 
         product = Product()
-        while True:
-            id = randomDigits(8, len(products))
-            if id not in productids:
-                product.id = id
-                break
+        product.id = randomDigits(8, len(products))
         
         branch_id = data['branch_id']
         branch = Branch.objects.get(id=branch_id)
@@ -265,8 +250,7 @@ class AddProduct(APIView):
         product.partnerid = partner
         product.branchid = branch
         product.name = data['name']
-        product.price = data['price']
-        product.numinbranch = data['numinbranch']
+        product.ctrprice = data['ctrprice']
         product.save()
 
         return json_format(code = 200, message = "Success")
@@ -286,7 +270,9 @@ class ListProduct(APIView):
             tmp['partner_id'] = product.partnerid.id
             tmp['branch_id'] = product.branchid.id
             tmp['name'] = product.name
-            tmp['price'] = product.price
+            tmp['ctrprice'] = product.ctrprice
+            tmp['inprice'] = product.inprice
+            tmp['outprice'] = product.outprice
             tmp['numinbranch'] = product.numinbranch
             if productid == product.id:
                 return_data = tmp
@@ -300,16 +286,24 @@ class EditProductInfo(APIView):
         data = request.data
         product  = Product.objects.get(id=data['id'])
 
-        branch_id = data['branch_id']
-        branch = Branch.objects.get(id=branch_id)
-        partner_id = data['partner_id']
-        partner = Partner.objects.get(id=partner_id)
-        
-        product.partnerid = partner
-        product.branchid = branch
-        product.name = data['name']
-        product.price = data['price']
-        product.numinbranch = data['numinbranch']
+        if "branch_id" in data.keys():
+            branch_id = data['branch_id']
+            branch = Branch.objects.get(id=branch_id)
+            product.branchid = branch
+        if "partner_id" in data.keys():
+            partner_id = data['partner_id']
+            partner = Partner.objects.get(id=partner_id)
+            product.partnerid = partner
+        if "name" in data.keys():
+            product.name = data['name']
+        if "numinbranch" in data.keys():
+            product.numinbranch = data['numinbranch']
+        if "ctrprice" in data.keys():
+            product.ctrprice = data['ctrprice']
+        if "inprice" in data.keys():
+            product.inprice = data['inprice']
+        if "outprice" in data.keys():
+            product.outprice = data['outprice']
         product.save()
 
         return json_format(code = 200, message = "Success")
@@ -319,6 +313,7 @@ class DeleteProduct(APIView):
         data = request.data
         product = Product.objects.get(id=data["id"])
         product.delete()
+
 class GetDepartment(APIView):
     def get(self, request, format=None):
         departments = [{'department_id': department.id,
@@ -371,18 +366,14 @@ class DeleteDepartment(APIView):
         department.delete()
         return json_format(code = 200, message = "Success")
 
-class AddBill(APIView):
+class AddBuyBill(APIView):
     def post(self, request, format = None):
         data = request.data
         user = Accountant.objects.get(userid=data['userid'])
+
         list_product = data['list_product']
         number_product = data['number_product']
-        products = []
-        sum = 0
-        for productid, num in zip(list_product, number_product):
-            product = Product.objects.get(id=productid)
-            products.append(product)
-            sum += (product.price * num)
+        products = [Product.objects.get(id = productid) for productid in list_product]
         
         doc = Document()
         doc.accountantuserid = user
@@ -391,35 +382,34 @@ class AddBill(APIView):
         doc.time = datetime.now()
         doc.name = data["name"]
         doc.content = data['content']
-        doc.amount = sum
+        doc.amount = data['amount']
         doc.save()
 
-        bill = Bill()
-        bill.billtype = data['type']
-        bill.tax = data['tax']
+        bill = BuyBill()
         bill.documentid = doc
-        bill.partnerid = Partner.objects.get(id = data['partnerid'])
+        bill.payment = data['payment']
         bill.save()
 
         for product, num in zip(products, number_product):
-            productbill = ProductBill(productid = product, billdocumentid = bill, numinbill = num)
+            product.inprice = data['amount']
+            product.save()
+            id = randomDigits(8, len(ProductBuyBill.objects.all()))
+            productbill = ProductBuyBill(id = id, productid = product, buybilldocumentid = bill, numinbill = num)
             productbill.save()
         
         return json_format(code = 200, message = "Success")
 
-class GetBill(APIView):
+class GetBuyBill(APIView):
     def get(self, request, format = None):
         res = []
         data = request.data
         for doc in Document.objects.all():
             id = doc.id
-            bill = Bill.objects.get(documentid__id=id)
-            product_bills = ProductBill.objects.filter(billdocumentid = id)
+            bill = BuyBill.objects.get(documentid__id=id)
+            product_bills = ProductBuyBill.objects.filter(buybilldocumentid__documentid__id = id)
             res_data = {
-                "billtype": bill.billtype,
-                "tax": bill.tax,
-                "amount": bill.documentid.amount,
-                "partnerid": bill.partnerid.id,
+                "documentid": bill.documentid.id,
+                "payment": bill.payment,
             }
             for product_bill in product_bills:
                 product = product_bill.productid
@@ -436,9 +426,77 @@ class GetBill(APIView):
             res.append(res_data)
         return json_format(code = 200, message = "Success", data = res)
 
-class DeleteBill(APIView):
+class DeleteDocument(APIView):
     def post(self, request, format = None):
         data = request.data
+        doc = Document.objects.get(id = data['id'])
+        doc.delete()
+        return json_format(code = 200, message = "Success")
+
+class AddSellBill(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        user = Accountant.objects.get(userid=data['userid'])
+
+        list_product = data['list_product']
+        number_product = data['number_product']
+        products = [Product.objects.get(id = productid) for productid in list_product]
+        
+        doc = Document()
+        doc.accountantuserid = user
+        doc.id = randomDigits(8, len(Document.objects.all()))
+        doc.type = "bill"
+        doc.time = datetime.now()
+        doc.name = data["name"]
+        doc.content = data['content']
+        doc.save()
+
+        bill = SellBill()
+        bill.documentid = doc
+        bill.customer = data['customer']
+        bill.cusaddress = data['cusaddress']
+        bill.customer = data['customer']
+        bill.cusphone = data['cusphone']
+        tax = Tax.objects.get(id = data['taxid'])
+        bill.taxid = tax
+        bill.save()
+
+        for product, num in zip(products, number_product):
+            id = randomDigits(8, len(ProductSellBill.objects.all()))
+            productbill = ProductSellBill(id = id, productid = product, sellbilldocumentid = bill, numinbill = num)
+            productbill.save()
+        
+        return json_format(code = 200, message = "Success")
+
+class GetSellBill(APIView):
+    def get(self, request, format = None):
+        res = []
+        data = request.data
+        for doc in Document.objects.all():
+            id = doc.id
+            bill = SellBill.objects.get(documentid__id=id)
+            product_bills = ProductSellBill.objects.filter(sellbilldocumentid__documentid__id = id)
+            res_data = {
+                "documentid": bill.documentid.id,
+                "customer": bill.customer,
+                "cusaddress": bill.cusaddress,
+                "cusphone": bill.cusphone,
+                "payment": bill.payment,
+            }
+            for product_bill in product_bills:
+                product = product_bill.productid
+                num = product_bill.numinbill
+                if "list_product" not in res_data.keys():
+                    res_data["list_product"] = [product.id]
+                    res_data["number_product"] = [num]
+                else:
+                    res_data["list_product"].append(product.id)
+                    res_data["number_product"].append(num)
+            if "id" in data.keys() and id == data['id']:
+                res = res_data
+                break
+            res.append(res_data)
+        return json_format(code = 200, message = "Success", data = res)
 
 class AddLend(APIView):
     def post(self, request, format = None):
@@ -451,7 +509,7 @@ class AddLend(APIView):
         lendrec.chiefmanageruserid = Chiefmanager.objects.get(userid__id = data['userid'])
         lendrec.desc = data['desc']
         lendrec.amount = data['amount']
-        lendrec.time = datetime.now()
+        lendrec.time = datetime.strptime(data['time'], "%d/%m/%Y")
         lendrec.interest_rate = data['interest_rate']
         lendrec.save()
         return json_format(code = 200, message = "Success")
@@ -468,7 +526,7 @@ class GetLend(APIView):
             tmp['userid'] = lendrec.chiefmanageruserid.userid.id
             tmp['desc'] = lendrec.desc
             tmp['amount'] = lendrec.amount
-            tmp['time'] = lendrec.time
+            tmp['time'] = lendrec.time.strftime("%d/%m/%Y")
             tmp['interest_rate'] = lendrec.interest_rate
 
             if "id" in data.keys() and data['id'] == lendrec.id:
@@ -478,5 +536,116 @@ class GetLend(APIView):
         return json_format(code = 200, message = "Success", data = redata)
 
 class EditLend(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        lendrec = Lendrec.objects.get(id = data['id'])
+
+        lendrec.desc = data['desc'] 
+        lendrec.amount = data['amount'] 
+        lendrec.time = datetime.strptime(data['time'], "%d/%m/%Y")
+        lendrec.interest_rate = data['interest_rate'] 
+        lendrec.save()
+
+        return json_format(code = 200, message = "Success")
+
+class AddLoan(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        loanrecs = [loanrec for loanrec in Loanrec.objects.all()]
+
+        loanrec = Loanrec()
+        loanrec.id = randomDigits(8, len(loanrecs))
+        loanrec.chiefmanageruserid = Chiefmanager.objects.get(userid__id = data['userid'])
+        loanrec.desc = data['desc']
+        loanrec.amount = data['amount']
+        loanrec.time = datetime.strptime(data['time'], "%d/%m/%Y")
+        loanrec.interest_rate = data['interest_rate']
+        loanrec.save()
+
+        return json_format(code = 200, message = "Success")
+
+class GetLoan(APIView):
+    def get(self, request, format = None):
+        data = request.data
+        loanrecs = [loanrec for loanrec in Loanrec.objects.all()]
+        redata = []
+        for loanrec in loanrecs:
+            tmp = dict()
+            tmp['id'] = loanrec.id
+            tmp['userid'] = loanrec.chiefmanageruserid.userid.id
+            tmp['desc'] = loanrec.desc
+            tmp['amount'] = loanrec.amount
+            tmp['time'] = loanrec.time.strftime("%d/%m/%Y")
+            tmp['interest_rate'] = loanrec.interest_rate
+
+            if "id" in data.keys() and data['id'] == loanrec.id:
+                redata = tmp
+                break
+            redata.append(tmp)
+        return json_format(code = 200, message = "Success", data = redata)
+
+class EditLoan(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        loanrec = Loanrec.objects.get(id = data['id'])
+
+        loanrec.desc = data['desc'] 
+        loanrec.amount = data['amount'] 
+        loanrec.time = datetime.strptime(data['time'], "%d/%m/%Y")
+        loanrec.interest_rate = data['interest_rate'] 
+        loanrec.save()
+
+        return json_format(code = 200, message = "Success")
+
+class AddInvestment(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        investmentrecs = [investmentrec for investmentrec in Investmentrec.objects.all()]
+
+        investmentrec = Loanrec()
+        investmentrec.id = randomDigits(8, len(investmentrecs))
+        investmentrec.chiefmanageruserid = Chiefmanager.objects.get(userid__id = data['userid'])
+        investmentrec.desc = data['desc']
+        investmentrec.amount = data['amount']
+        investmentrec.time = datetime.strptime(data['time'], "%d/%m/%Y")
+        investmentrec.type = data['type']
+        investmentrec.save()
+
+        return json_format(code = 200, message = "Success")
+
+class GetInvestment(APIView):
+    def get(self, request, format = None):
+        data = request.data
+        investmentrecs = [investmentrec for investmentrec in Investmentrec.objects.all()]
+        redata = []
+        for investmentrec in investmentrecs:
+            tmp = dict()
+            tmp['id'] = investmentrec.id
+            tmp['userid'] = investmentrec.chiefmanageruserid.userid.id
+            tmp['desc'] = investmentrec.desc
+            tmp['amount'] = investmentrec.amount
+            tmp['time'] = investmentrec.time.strftime("%d/%m/%Y")
+            tmp['type'] = investmentrec.type
+
+            if "id" in data.keys() and data['id'] == investmentrec.id:
+                redata = tmp
+                break
+            redata.append(tmp)
+        return json_format(code = 200, message = "Success", data = redata)
+
+class EditInvestment(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        investmentrec = Investmentrec.objects.get(id = data['id'])
+
+        investmentrec.desc = data['desc'] 
+        investmentrec.amount = data['amount'] 
+        investmentrec.time = datetime.strptime(data['time'], "%d/%m/%Y")
+        investmentrec.type = data['interest_rate'] 
+        investmentrec.save()
+
+        return json_format(code = 200, message = "Success")
+
+class AddReport(APIView):
     def post(self, request, format = None):
         data = request.data

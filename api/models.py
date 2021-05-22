@@ -71,7 +71,7 @@ class Document(models.Model):
     name = models.CharField(db_column='Name', max_length=255, blank=True, null=True)  # Field name made lowercase.
     type = models.CharField(db_column='Type', max_length=255, blank=True, null=True)  # Field name made lowercase.
     content = models.CharField(db_column='Content', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    amount = models.FloatField(db_column='Amount')  # Field name made lowercase.
+    amount = models.FloatField(db_column='Amount', default= 0)  # Field name made lowercase.
     time = models.DateField(db_column='Time', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
@@ -152,14 +152,15 @@ class Product(models.Model):
     ctrprice = models.FloatField(db_column='CtrPrice', blank=True, null=True)  # Field name made lowercase.
     inprice = models.FloatField(db_column='InPrice', blank=True, null=True)  # Field name made lowercase.
     outprice = models.FloatField(db_column='OutPrice', blank=True, null=True)  # Field name made lowercase.
-    numinbranch = models.IntegerField(db_column='NumInBranch')  # Field name made lowercase.
+    numinbranch = models.IntegerField(db_column='NumInBranch', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         db_table = 'product'
 
 
 class ProductSellBill(models.Model):
-    productid = models.OneToOneField(Product, models.CASCADE, db_column='ProductID', primary_key=True)  # Field name made lowercase.
+    id = models.CharField(db_column='ID', primary_key=True, max_length=255)
+    productid = models.ForeignKey(Product, models.CASCADE, db_column='ProductID')  # Field name made lowercase.
     sellbilldocumentid = models.ForeignKey('sellBill', models.CASCADE, db_column='SellBillDocumentID')  # Field name made lowercase.
     numinbill = models.IntegerField(db_column='NumberInBill', blank=True, null=True)
 
@@ -168,7 +169,8 @@ class ProductSellBill(models.Model):
         unique_together = (('productid', 'sellbilldocumentid'),)
 
 class ProductBuyBill(models.Model):
-    productid = models.OneToOneField(Product, models.CASCADE, db_column='ProductID', primary_key=True)  # Field name made lowercase.
+    id = models.CharField(db_column='ID', primary_key=True, max_length=255)
+    productid = models.ForeignKey(Product, models.CASCADE, db_column='ProductID')  # Field name made lowercase.
     buybilldocumentid = models.ForeignKey('BuyBill', models.CASCADE, db_column='BuyBillDocumentID')  # Field name made lowercase.
     numinbill = models.IntegerField(db_column='NumberInBill', blank=True, null=True)
 
@@ -186,7 +188,7 @@ class BuyBill(models.Model):
 class SellBill(models.Model):
     customer = models.CharField(db_column='Customer', max_length=255, blank=True, null=True)  # Field name made lowercase.
     documentid = models.OneToOneField('Document', models.CASCADE, db_column='DocumentID', primary_key=True)  # Field name made lowercase.
-    taxid = models.OneToOneField('Tax', models.CASCADE, db_column='TaxID')  # Field name made lowercase.
+    taxid = models.ForeignKey('Tax', models.CASCADE, db_column='TaxID')  # Field name made lowercase.
     cusaddress = models.CharField(db_column='CusAddress', max_length=255, blank=True, null=True)
     payment = models.CharField(db_column='PaymentMethod', max_length=255, blank=True, null=True)
     cusphone = models.CharField(db_column='CusPhone', max_length=255, blank=True, null=True)
