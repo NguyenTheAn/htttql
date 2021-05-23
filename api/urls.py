@@ -35,4 +35,10 @@ urlpatterns = [
     path('get_employee', GetEmployee.as_view(), name = "get_employee"),
     path('delete_employee', DeleteEmployee.as_view(), name = "delete_employee"),
     path('edit_employee', EditInfoEmployee.as_view(), name = "edit_employee"),
+    path('add_salary', AddSalary.as_view(), name = "add_salary"),
+    path('get_salary', GetSalary.as_view(), name = "get_salary"),
+    path('get_salary_by_employee', GetSalaryByEmployee.as_view(), name = "get_salary_by_employee"),
+    path('add_tax', AddTax.as_view(), name = "add_tax"),
+    path('get_salary_table', GetSalaryTable.as_view(), name = "get_salary_table"),
+    path('edit_salary', EditSalary.as_view(), name = "edit_salary"),
 ]

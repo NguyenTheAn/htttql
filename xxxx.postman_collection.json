@@ -12,7 +12,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"branch_name\": \"Bmart\", \"branch_location\": \"VietNam\"}",
+					"raw": "{\"branch_phone\": \"0969394903\", \"branch_location\": \"VietNam\"}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -106,7 +106,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"branch_id\": \"79340451\", \"branch_name\": \"Bmart_edited\", \"branch_location\": \"VietNam_edited\"}",
+					"raw": "{\"branch_id\": \"67103899\", \"branch_phone\": \"123456789\", \"branch_location\": \"VietNam_edited\"}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -264,7 +264,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"department_name\": \"Spider man\",\n \"branch_id\": \"52533832\"}",
+					"raw": "{\"department_name\": \"Spider man\",\n \"branch_id\": \"67103899\"}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -296,7 +296,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"department_id\": \"91552156\",\n \"employee_name\": \"Bucky\",\n \"employee_phone\": \"123456\",\n \"employee_email\": \"abc@gmail.com\",\n \"employee_address\": \"Ha Noi\",\n \"employee_sex\": \"Male\",\n \"employee_exp\": 10}",
+					"raw": "{\"department_id\": \"28661224\",\n \"employee_name\": \"Thor\",\n \"taxid\": \"83401286\",\n \"employee_phone\": \"123456\",\n \"employee_email\": \"abc@gmail.com\",\n \"employee_address\": \"Ha Noi\",\n \"employee_sex\": \"Male\",\n \"employee_exp\": 10,\n \"employee_salary\": 1000,\n \"employee_coef\": 3}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -383,7 +383,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"department_id\": \"91552156\",\n \"employee_name\": \"Bucky_Edited1\",\n \"employee_phone\": \"123456\",\n \"employee_email\": \"abc@gmail.com\",\n \"employee_address\": \"Ha Noi\",\n \"employee_sex\": \"Male\",\n \"employee_exp\": 10,\n \"employee_id\": \"97493661\"}",
+					"raw": "{\"department_id\": \"28661224\",\n \"employee_name\": \"CaptainAmerica\",\n \"employee_id\": \"96856733\",\n \"taxid\": \"83401286\",\n \"employee_phone\": \"123456\",\n \"employee_email\": \"abc@gmail.com\",\n \"employee_address\": \"Ha Noi\",\n \"employee_sex\": \"Male\",\n \"employee_exp\": 10,\n \"employee_salary\": 4000,\n \"employee_coef\": 3}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -403,6 +403,207 @@
 					"path": [
 						"api",
 						"edit_employee"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:8000/add_salary",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": " {\"employee_id\": \"33790371\",\n  \"salary_table\": \"08/2021\",\n  \"fine\": 206,\n  \"reward\": 800}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/add_salary",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"add_salary"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:8000/api/add_tax",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"taxtype\": \"xxx\",\n \"percentage\": 20.1}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/add_tax",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"add_tax"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:8000/api/get_salary_by_employee",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"employeeid\": \"96856733\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/get_salary_by_employee",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"get_salary_by_employee"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:8000/api/get_salary_table",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"salary_table\": \"08/2021\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/get_salary_table",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"get_salary_table"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:8000/api/get_salary",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"salary_id\": \"13124432\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/get_salary",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"get_salary"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:8000/api/edit_salary",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"salary_id\": \"13124432\",\n\"fine\" : 7777}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/edit_salary",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"edit_salary"
 					]
 				}
 			},
