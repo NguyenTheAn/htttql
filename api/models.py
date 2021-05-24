@@ -16,6 +16,16 @@ from django.db import models
 # Accountant bỏ team
 # bill time dung .now
 
+class Log(models.Model):
+    id = models.CharField(db_column='ID', primary_key=True, max_length=255)
+    userid = models.ForeignKey('User', models.CASCADE, db_column='UserID', primary_key=True)
+    name = models.CharField(db_column='name', max_length=255, blank=True, null=True) 
+    action = models.CharField(db_column='action', max_length=255, blank=True, null=True) 
+    time = models.DateField(db_column='Time', blank=True, null=True) 
+
+    class Meta:
+        db_table = 'log'
+
 class Accountant(models.Model):
     created = models.DateField(db_column='Created', blank=True, null=True)  # Field name made lowercase.
     userid = models.OneToOneField('User', models.CASCADE, db_column='UserID', primary_key=True)  # Field name made lowercase.
