@@ -41,4 +41,12 @@ urlpatterns = [
     path('add_tax', AddTax.as_view(), name = "add_tax"),
     path('get_salary_table', GetSalaryTable.as_view(), name = "get_salary_table"),
     path('edit_salary', EditSalary.as_view(), name = "edit_salary"),
+    path('delete_salary', DeleteSalary.as_view(), name = "delete_salary"),
+    path('delete_tax', DeleteTax.as_view(), name = "delete_tax"),
+    path('edit_tax', EditTax.as_view(), name = "edit_tax"),
+    path('get_tax', GetTax.as_view(), name = "get_tax"),
+    path('add_log', AddLog.as_view(), name = "add_log"),
+    path('get_log', GetLog.as_view(), name = "get_log"),
+    path('edit_log', EditLog.as_view(), name = "edit_log"),
+    path('delete_log', DeleteLog.as_view(), name = "delete_log"),
 ]

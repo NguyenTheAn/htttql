@@ -171,38 +171,6 @@
 			"response": []
 		},
 		{
-			"name": "http://127.0.0.1:8000/api/delete_department",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\"department_id\": \"31657066\"}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://127.0.0.1:8000/api/delete_department",
-					"protocol": "http",
-					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
-					],
-					"port": "8000",
-					"path": [
-						"api",
-						"delete_department"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "http://127.0.0.1:8000/api/edit_department",
 			"request": {
 				"method": "POST",
@@ -258,13 +226,45 @@
 			"response": []
 		},
 		{
+			"name": "http://127.0.0.1:8000/api/delete_department",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"department_id\": \"31657066\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/delete_department",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"delete_department"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "http://127.0.0.1:8000/api/add_department",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"department_name\": \"Spider man\",\n \"branch_id\": \"67103899\"}",
+					"raw": "{\"department_name\": \"Spider man\",\n \"branch_id\": \"15599374\"}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -296,7 +296,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"department_id\": \"28661224\",\n \"employee_name\": \"Thor\",\n \"taxid\": \"83401286\",\n \"employee_phone\": \"123456\",\n \"employee_email\": \"abc@gmail.com\",\n \"employee_address\": \"Ha Noi\",\n \"employee_sex\": \"Male\",\n \"employee_exp\": 10,\n \"employee_salary\": 1000,\n \"employee_coef\": 3}",
+					"raw": "{\"department_id\": \"17618774\",\n \"employee_name\": \"Thor\",\n \"taxid\": \"55760573\",\n \"employee_phone\": \"123456\",\n \"employee_email\": \"abc@gmail.com\",\n \"employee_address\": \"Ha Noi\",\n \"employee_sex\": \"Male\",\n \"employee_exp\": 10,\n \"employee_salary\": 1000,\n \"employee_coef\": 3}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -415,7 +415,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": " {\"employee_id\": \"33790371\",\n  \"salary_table\": \"08/2021\",\n  \"fine\": 206,\n  \"reward\": 800}",
+					"raw": " {\"employee_id\": \"90445637\",\n  \"salary_table\": \"08/2021\",\n  \"fine\": 206,\n  \"reward\": 800}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -447,7 +447,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"taxtype\": \"xxx\",\n \"percentage\": 20.1}",
+					"raw": "{\"taxtype\": \"TNDN\",\n \"percentage\": 60.9}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -552,7 +552,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"salary_id\": \"13124432\"}",
+					"raw": "{\"salary_id\": \"15019860\"}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -604,6 +604,244 @@
 					"path": [
 						"api",
 						"edit_salary"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:8000/api/delete_salary",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"salary_id\": \"32523112\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/delete_salary",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"delete_salary"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:8000/api/get_tax",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/get_tax",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"get_tax"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:8000/api/edit_tax",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"tax_id\": \"36729777\",\n \"percentage\": 12.3}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/edit_tax",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"edit_tax"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:8000/api/delete_tax",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"tax_id\": \"36729777\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/delete_tax",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"delete_tax"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:8000/api/add_log",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"userid\": \"10000000\",\n \"name\": \"HAAA\",\n \"action\": \"delete\",\n  \"time\": 1545730073}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/add_log",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"add_log"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:8000/api/get_log",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/get_log",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"get_log"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:8000/api/edit_log",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"log_id\": \"10000000\",\n \"action\": \"edit\",\n  \"time\": 1552730073}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/edit_log",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"edit_log"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:8000/api/delete_log",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"log_id\": \"10000000\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/delete_log",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"delete_log"
 					]
 				}
 			},
