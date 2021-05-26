@@ -78,14 +78,19 @@ class SigninViews(APIView):
     def post(self, request, format=None):
         users = [user for user in User.objects.all()]
         type_acc = np.array(["Manager", "Chiefmanager", "Accountant"])
+        instance = np.array([Manager, Chiefmanager, Accountant])
         data = request.data
         for user in users:
             
             if user.username == data["username"] and user.password == data["password"]:
                 list1 = np.array([Manager.objects.filter(userid=user.id).count(), Chiefmanager.objects.filter(userid=user.id).count(), \
                     Accountant.objects.filter(userid=user.id).count()])
+                account_type = type_acc[list1 != 0][0]
                 data = {"id": user.id,
-                        "account_type" : type_acc[list1 != 0][0]}
+                        "account_type" : account_type}
+                if account_type != "Chiefmanager":
+                    data["branchid"] = instance[list1 != 0][0].objects.get(userid__id = user.id).branchid.id
+
                 return json_format(code = 200, message = "Login successfully", data = data)
         
         return json_format(code = 400, message = "Wrong username or password")

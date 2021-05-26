@@ -18,7 +18,7 @@ from django.db import models
 
 class Log(models.Model):
     id = models.CharField(db_column='ID', primary_key=True, max_length=255)
-    userid = models.ForeignKey('User', models.CASCADE, db_column='UserID', primary_key=True)
+    userid = models.ForeignKey('User', models.CASCADE, db_column='UserID')
     name = models.CharField(db_column='name', max_length=255, blank=True, null=True) 
     action = models.CharField(db_column='action', max_length=255, blank=True, null=True) 
     time = models.DateField(db_column='Time', blank=True, null=True) 
