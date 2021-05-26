@@ -161,8 +161,10 @@ class EditInfoBranch(APIView):
         data = request.data
         branch  = Branch.objects.get(id=data['branch_id'])
         
-        branch.phone = data["branch_phone"]
-        branch.location = data["branch_location"]
+        if "branch_phone" in data.keys():
+            branch.phone = data["branch_phone"]
+        if "branch_location" in data.keys():
+            branch.location = data["branch_location"]
         branch.save()
 
         return json_format(code = 200, message = "Success")
@@ -213,9 +215,11 @@ class EditInfoDepartment(APIView):
         data = request.data
         department  = Department.objects.get(id=data['department_id'])
         
-        department.name = data["department_name"]
-        branch = Branch.objects.get(id=data['branch_id'])
-        department.brandid = branch
+        if "department_name" in data.keys():
+            department.name = data["department_name"]
+        if "branch_id" in data.keys():
+            branch = Branch.objects.get(id=data['branch_id'])
+            department.brandid = branch
         department.save()
 
         return json_format(code = 200, message = "Success")
