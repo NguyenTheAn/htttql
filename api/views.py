@@ -318,6 +318,7 @@ class DeleteProduct(APIView):
         data = request.data
         product = Product.objects.get(id=data["id"])
         product.delete()
+        return json_format(code = 200, message = "Success")
 
 class GetDepartment(APIView):
     def get(self, request, format=None):
@@ -522,6 +523,7 @@ class AddLend(APIView):
         lendrec.desc = data['desc']
         lendrec.amount = data['amount']
         lendrec.time = datetime.strptime(data['time'], "%d/%m/%Y")
+        lendrec.expired = datetime.strptime(data['expired'], "%d/%m/%Y")
         lendrec.interest_rate = data['interest_rate']
         lendrec.save()
         return json_format(code = 200, message = "Success")
@@ -539,6 +541,7 @@ class GetLend(APIView):
             tmp['desc'] = lendrec.desc
             tmp['amount'] = lendrec.amount
             tmp['time'] = lendrec.time.strftime("%d/%m/%Y")
+            tmp['expired'] = lendrec.expired.strftime("%d/%m/%Y")
             tmp['interest_rate'] = lendrec.interest_rate
 
             if "id" in data.keys() and data['id'] == lendrec.id:
@@ -555,6 +558,7 @@ class EditLend(APIView):
         lendrec.desc = data['desc'] 
         lendrec.amount = data['amount'] 
         lendrec.time = datetime.strptime(data['time'], "%d/%m/%Y")
+        lendrec.expired = datetime.strptime(data['expired'], "%d/%m/%Y")
         lendrec.interest_rate = data['interest_rate'] 
         lendrec.save()
 
@@ -571,6 +575,7 @@ class AddLoan(APIView):
         loanrec.desc = data['desc']
         loanrec.amount = data['amount']
         loanrec.time = datetime.strptime(data['time'], "%d/%m/%Y")
+        loanrec.expired = datetime.strptime(data['expired'], "%d/%m/%Y")
         loanrec.interest_rate = data['interest_rate']
         loanrec.save()
 
@@ -588,6 +593,7 @@ class GetLoan(APIView):
             tmp['desc'] = loanrec.desc
             tmp['amount'] = loanrec.amount
             tmp['time'] = loanrec.time.strftime("%d/%m/%Y")
+            tmp['expired'] = loanrec.expired.strftime("%d/%m/%Y")
             tmp['interest_rate'] = loanrec.interest_rate
 
             if "id" in data.keys() and data['id'] == loanrec.id:
@@ -604,6 +610,7 @@ class EditLoan(APIView):
         loanrec.desc = data['desc'] 
         loanrec.amount = data['amount'] 
         loanrec.time = datetime.strptime(data['time'], "%d/%m/%Y")
+        loanrec.expired = datetime.strptime(data['expired'], "%d/%m/%Y")
         loanrec.interest_rate = data['interest_rate'] 
         loanrec.save()
 

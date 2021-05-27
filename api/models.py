@@ -124,11 +124,22 @@ class Lendrec(models.Model):
     desc = models.CharField(db_column='Desc', max_length=255, blank=True, null=True)  # Field name made lowercase.
     amount = models.FloatField(db_column='Amount')  # Field name made lowercase.
     time = models.DateField(db_column='Time', blank=True, null=True)  # Field name made lowercase.
+    expired = models.DateField(db_column='expired', blank=True, null=True)
     interest_rate = models.FloatField(db_column='InterestRate', blank=True, null=True) 
 
     class Meta:
         db_table = 'lendrec'
 
+class LendPaying(models.Model):
+    id = models.CharField(db_column='ID', primary_key=True, max_length=255)
+    lendrecid = models.ForeignKey(Lendrec, models.CASCADE, db_column='Lendrecid')
+    interestamount = models.FloatField(db_column='InterestAmount', blank=True, null=True)
+    payingamount = models.FloatField(db_column='PayingAmount', blank=True, null=True)
+    time = models.DateField(db_column='Time', blank=True, null=True)
+    payment = models.CharField(db_column='PaymentMethod', max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = 'lendpaying'
 
 class Loanrec(models.Model):
     id = models.CharField(db_column='ID', primary_key=True, max_length=255)  # Field name made lowercase.
@@ -136,10 +147,21 @@ class Loanrec(models.Model):
     desc = models.CharField(db_column='Desc', max_length=255, blank=True, null=True)  # Field name made lowercase.
     amount = models.FloatField(db_column='Amount')  # Field name made lowercase.
     time = models.DateField(db_column='Time', blank=True, null=True)  # Field name made lowercase.
+    expired = models.DateField(db_column='expired', blank=True, null=True)
     interest_rate = models.FloatField(db_column='InterestRate', blank=True, null=True) 
 
     class Meta:
         db_table = 'loanrec'
+        
+class LoanPaying(models.Model):
+    id = models.CharField(db_column='ID', primary_key=True, max_length=255)
+    loanrecid = models.ForeignKey(Loanrec, models.CASCADE, db_column='Loanrecid')
+    interestamount = models.FloatField(db_column='InterestAmount', blank=True, null=True)
+    payingamount = models.FloatField(db_column='PayingAmount', blank=True, null=True)
+    time = models.DateField(db_column='Time', blank=True, null=True)
+    payment = models.CharField(db_column='PaymentMethod', max_length=255, blank=True, null=True)
+    class Meta:
+        db_table = 'loanpaying'
 
 class Partner(models.Model):
     id = models.CharField(db_column='ID', primary_key=True, max_length=255)  # Field name made lowercase.
