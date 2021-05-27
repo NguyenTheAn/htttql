@@ -88,18 +88,18 @@ class SigninViews(APIView):
     
     def post(self, request, format=None):
         users = [user for user in User.objects.all()]
-        type_acc = np.array(["Manager", "Chiefmanager", "Accountant"])
-        instance = np.array([Manager, Chiefmanager, Accountant])
+        type_acc = np.array(["Manager", "Chiefmanager", "Accountant", "Admin"])
+        instance = np.array([Manager, Chiefmanager, Accountant, Admin])
         data = request.data
         for user in users:
             
             if user.username == data["username"] and user.password == data["password"]:
                 list1 = np.array([Manager.objects.filter(userid=user.id).count(), Chiefmanager.objects.filter(userid=user.id).count(), \
-                    Accountant.objects.filter(userid=user.id).count()])
+                    Accountant.objects.filter(userid=user.id).count(), Admin.objects.filter(userid=user.id).count(),])
                 account_type = type_acc[list1 != 0][0]
                 data = {"id": user.id,
                         "account_type" : account_type}
-                if account_type != "Chiefmanager":
+                if account_type != "Chiefmanager" and account_type != "Admin":
                     data["branchid"] = instance[list1 != 0][0].objects.get(userid__id = user.id).branchid.id
 
                 data["username"] = user.username
@@ -749,10 +749,6 @@ class EditInvestment(APIView):
 
         return json_format(code = 200, message = "Success")
 
-class AddReport(APIView):
-    def post(self, request, format = None):
-        data = request.data
-
 class AddTax(APIView):
     def post(self, request, format=None):
         taxes_ids = [int(tax.id) for tax in Tax.objects.all()]
@@ -1087,3 +1083,9 @@ class AddLog(APIView):
 
         log.save()
         return json_format(code = 200, message = "Success")
+
+class ProductStatistic(APIView):
+    def get(self, request, format=None):
+        data = request.data
+        branchid = data['branchid']
+        
