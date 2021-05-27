@@ -5,7 +5,6 @@ from .models import *
 from .helpers.common import *
 from datetime import datetime
 import numpy as np
-import datetime
 from calendar import monthrange
 
 def randomDigits(digits, index):
@@ -16,12 +15,16 @@ class ListUsers(APIView):
     def get(self, request, format=None):
         data = request.data
         users = [user for user in User.objects.all()]
+        type_acc = np.array(["Manager", "Chiefmanager", "Accountant", "Admin"])
         return_data = []
         if "id" in data.keys():
             userid = data['id']
         else:
             userid = None
         for user in users:
+            list1 = np.array([Manager.objects.filter(userid=user.id).count(), Chiefmanager.objects.filter(userid=user.id).count(), \
+                        Accountant.objects.filter(userid=user.id).count(), Admin.objects.filter(userid=user.id).count()])
+            account_type = type_acc[list1 != 0][0]
             tmp = {}
             tmp["user_id"] = user.id
             tmp["username"] = user.username
@@ -29,6 +32,7 @@ class ListUsers(APIView):
             tmp["email"] = user.email
             tmp["address"] = user.address
             tmp["sex"] = user.sex
+            tmp["type"] = account_type
             if userid == user.id:
                 return_data = tmp
                 break
@@ -41,18 +45,20 @@ class CreateAccount(APIView):
     def post(self, request, format=None):
         users = [user for user in User.objects.all()]
         usernames = [user.username for user in users]
-        userids = [user.id for user in users]
         data = request.data
         
         if data["username"] in usernames:
             return json_format(code = 400, message = "Account exist")
 
         user = User()
-        while True:
-            id = randomDigits(8, len(users))
-            if id not in userids:
-                user.id = id
-                break
+        userids = [int(user.id) for user in users]
+        if len(userids) != 0:
+            index = max(userids) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+
+        user.id = id
         user.username = data["username"]
         user.password = data["password"]
         user.email = data["email"]
@@ -61,9 +67,12 @@ class CreateAccount(APIView):
         user.address = data["address"]
         user.save()
 
-        if data['role'] == "Manager":
+        if data['role'] == "Admin":
+            a = Admin(userid = user)
+            a.save()
+        elif data['role'] == "Manager":
             branch = Branch.objects.get(id=data['branch_id'])
-            m = Manager(userid = user, created = datetime.datetime.now(), branchid = branch)
+            m = Manager(userid = user, created = datetime.now(), branchid = branch)
             m.save()
         elif data['role'] == "Chiefmanager":
             cm = Chiefmanager(userid = user)
@@ -92,6 +101,11 @@ class SigninViews(APIView):
                         "account_type" : account_type}
                 if account_type != "Chiefmanager":
                     data["branchid"] = instance[list1 != 0][0].objects.get(userid__id = user.id).branchid.id
+
+                data["username"] = user.username
+                data["email"] = user.email
+                data["address"] = user.address
+                data["sex"] = user.sex
 
                 return json_format(code = 200, message = "Login successfully", data = data)
         
@@ -125,19 +139,20 @@ class AddPartner(APIView):
         partners = [partner for partner in Partner.objects.all()]
 
         partnernames = [partner.name for partner in partners]
-        partnerids = [partner.id for partner in partners]
+        partnerids = [int(partner.id) for partner in partners]
         data = request.data
         
         if data["partnername"] in partnernames:
             return json_format(code = 400, message = "Partner exist")
 
         partner = Partner()
-        while True:
-            id = randomDigits(8, len(partners))
-            if id not in partnerids:
-                partner.id = id
-                break
+        if len(partnerids) != 0:
+            index = max(partnerids) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
         
+        partner.id = id
         partner.name = data["partnername"]
         partner.taxid = data["taxid"]
         partner.address = data['address']
@@ -214,18 +229,20 @@ class AddBranch(APIView):
     def post(self, request, format=None):
         branchs = [branch for branch in Branch.objects.all()]
         branch_phone = [branch.phone for branch in branchs]
-        branch_id = [branch.id for branch in branchs]
+        branch_id = [int(branch.id) for branch in branchs]
         data = request.data
         
         if data["branch_phone"] in branch_phone:
             return json_format(code = 400, message = "Branch exist")
 
         branch = Branch()
-        while True:
-            id = randomDigits(8, len(branch_id))
-            if id not in branch_id:
-                branch.id = id
-                break
+        if len(branch_id) != 0:
+            index = max(branch_id) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        
+        branch.id = id
         branch.phone = data['branch_phone']
         branch.location = data['branch_location']
         branch.save()
@@ -256,19 +273,25 @@ class AddProduct(APIView):
     def post(self, request, format = None):
         products = [product for product in Product.objects.all()]
         productnames = [product.name for product in products]
+        productids = [int(product.id) for product in products]
         data = request.data
         
         if data["name"] in productnames:
             return json_format(code = 400, message = "Product exist")
 
         product = Product()
-        product.id = randomDigits(8, len(products))
+        if len(productids) != 0:
+            index = max(productids) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
         
         branch_id = data['branch_id']
         branch = Branch.objects.get(id=branch_id)
         partner_id = data['partner_id']
         partner = Partner.objects.get(id=partner_id)
 
+        product.id = id
         product.partnerid = partner
         product.branchid = branch
         product.name = data['name']
@@ -358,18 +381,19 @@ class AddDepartment(APIView):
     def post(self, request, format=None):
         departments = [department for department in Department.objects.all()]
         department_name = [department.name for department in departments]
-        department_id = [department.id for department in departments]
+        department_id = [int(department.id) for department in departments]
         data = request.data
         
         if data["department_name"] in department_name:
             return json_format(code = 400, message = "Department exist")
 
         department = Department()
-        while True:
-            id = randomDigits(8, len(departments))
-            if id not in department_id:
-                department.id = id
-                break
+        if len(department_id) != 0:
+            index = max(department_id) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        department.id = id
         department.name = data['department_name']
         branch = Branch.objects.get(id=data['branch_id'])
         department.branchid = branch
@@ -407,8 +431,12 @@ class AddBuyBill(APIView):
 
         list_product = data['list_product']
         number_product = data['number_product']
+        list_price = data['list_price']
         products = [Product.objects.get(id = productid) for productid in list_product]
         
+        amount = 0
+        for price, num in zip(number_product, list_price):
+            amount += (price*num)
         doc = Document()
         doc.accountantuserid = user
         doc.id = randomDigits(8, len(Document.objects.all()))
@@ -416,7 +444,7 @@ class AddBuyBill(APIView):
         doc.time = datetime.now()
         doc.name = data["name"]
         doc.content = data['content']
-        doc.amount = data['amount']
+        doc.amount = amount
         doc.save()
 
         bill = BuyBill()
@@ -425,11 +453,16 @@ class AddBuyBill(APIView):
         bill.payment = data['payment']
         bill.save()
 
-        for product, num in zip(products, number_product):
-            product.inprice = data['amount']
+        for product, num, price in zip(products, number_product, list_price):
+            product.inprice = price
             product.numinbranch += num
             product.save()
-            id = randomDigits(8, len(ProductBuyBill.objects.all()))
+            productbuybillsids = [int(pro.id) for pro in ProductBuyBill.objects.all()]
+            if len(productbuybillsids) != 0:
+                index = max(productbuybillsids) - 10000000 + 1
+            else:
+                index = 0
+            id = randomDigits(8, index)
             productbill = ProductBuyBill(id = id, productid = product, buybilldocumentid = bill, numinbill = num)
             productbill.save()
         
@@ -502,7 +535,12 @@ class AddSellBill(APIView):
         for product, num in zip(products, number_product):
             product.numinbranch -= num
             product.save()
-            id = randomDigits(8, len(ProductSellBill.objects.all()))
+            productsellbillsids = [int(pro.id) for pro in ProductSellBill.objects.all()]
+            if len(productsellbillsids) != 0:
+                index = max(productsellbillsids) - 10000000 + 1
+            else:
+                index = 0
+            id = randomDigits(8, index)
             productbill = ProductSellBill(id = id, productid = product, sellbilldocumentid = bill, numinbill = num)
             productbill.save()
         
@@ -542,9 +580,16 @@ class AddLend(APIView):
     def post(self, request, format = None):
         data = request.data
         lendrecs = [lendrec for lendrec in Lendrec.objects.all()]
+        lendrecids = [int(lendrec.id) for lendrec in lendrecs]
 
         lendrec = Lendrec()
-        lendrec.id = randomDigits(8, len(lendrecs))
+        
+        if len(lendrecids) != 0:
+            index = max(lendrecids) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        lendrec.id = id
         lendrec.partnerid = Partner.objects.get(id = data['partnerid'])
         lendrec.chiefmanageruserid = Chiefmanager.objects.get(userid__id = data['userid'])
         lendrec.desc = data['desc']
@@ -595,9 +640,15 @@ class AddLoan(APIView):
     def post(self, request, format = None):
         data = request.data
         loanrecs = [loanrec for loanrec in Loanrec.objects.all()]
+        loanrecids = [int(loanrec.id) for loanrec in loanrecs.objects.all()]
 
         loanrec = Loanrec()
-        loanrec.id = randomDigits(8, len(loanrecs))
+        if len(loanrecids) != 0:
+            index = max(loanrecids) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        loanrec.id = id
         loanrec.chiefmanageruserid = Chiefmanager.objects.get(userid__id = data['userid'])
         loanrec.desc = data['desc']
         loanrec.amount = data['amount']
@@ -647,9 +698,15 @@ class AddInvestment(APIView):
     def post(self, request, format = None):
         data = request.data
         investmentrecs = [investmentrec for investmentrec in Investmentrec.objects.all()]
+        investmentrecids = [int(investmentrec.id) for investmentrec in investmentrecs]
 
         investmentrec = Loanrec()
-        investmentrec.id = randomDigits(8, len(investmentrecs))
+        if len(investmentrecids) != 0:
+            index = max(investmentrecids) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        investmentrec.id = id
         investmentrec.chiefmanageruserid = Chiefmanager.objects.get(userid__id = data['userid'])
         investmentrec.desc = data['desc']
         investmentrec.amount = data['amount']
@@ -695,17 +752,19 @@ class EditInvestment(APIView):
 class AddReport(APIView):
     def post(self, request, format = None):
         data = request.data
+
 class AddTax(APIView):
     def post(self, request, format=None):
-        taxes_id = [tax.taxtype for tax in Tax.objects.all()]
+        taxes_ids = [int(tax.id) for tax in Tax.objects.all()]
         data = request.data
 
         tax = Tax()
-        while True:
-            id = randomDigits(8, len(taxes_id))
-            if id not in taxes_id:
-                tax.id = id
-                break
+        if len(taxes_ids) != 0:
+            index = max(taxes_ids) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        tax.id = id
         tax.taxtype = data['taxtype']
         tax.percentage = data['percentage']
         tax.save()
@@ -715,15 +774,16 @@ class AddTax(APIView):
 class AddEmployee(APIView):
     def post(self, request, format=None):
         employees = [employee for employee in Employee.objects.all()]
-        employee_id = [employee.id for employee in employees]
+        employee_id = [int(employee.id) for employee in employees]
         data = request.data
 
         employee = Employee()
-        while True:
-            id = randomDigits(8, len(employee_id))
-            if id not in employee_id:
-                employee.id = id
-                break
+        if len(employee_id) != 0:
+            index = max(employee_id) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        employee.id = id
                 
         department = Department.objects.get(id=data['department_id'])
         department.numofemployees += 1
@@ -818,14 +878,15 @@ class EditInfoEmployee(APIView):
 class AddSalary(APIView):
     def post(self, request, format=None):
         data = request.data
-        salaries_id = [salary.id for salary in Salary.objects.all()]
+        salaries_id = [int(salary.id) for salary in Salary.objects.all()]
 
         salary = Salary()
-        while True:
-            id = randomDigits(8, len(salaries_id))
-            if id not in salaries_id:
-                salary.id = id
-                break
+        if len(salaries_id) != 0:
+            index = max(salaries_id) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        salary.id = id
         
         salary.fine = data['fine']
         salary.reward = data['reward']
@@ -990,7 +1051,7 @@ class EditLog(APIView):
         if "action" in data.keys():
             log.action = data['action']
         if "time" in data.keys():
-            log.time = datetime.datetime.fromtimestamp(data['time'])
+            log.time = datetime.fromtimestamp(data['time'])
         log.save()
         return json_format(code = 200, message = "Success")
 
@@ -1007,16 +1068,17 @@ class GetLog(APIView):
 class AddLog(APIView):
     def post(self, request, format=None):
         data = request.data
-        logs_id = [log.id for log in Log.objects.all()]
+        logs_id = [int(log.id) for log in Log.objects.all()]
 
         log = Log()
-        while True:
-            id = randomDigits(8, len(logs_id))
-            if id not in logs_id:
-                log.id = id
-                break
+        if len(logs_id) != 0:
+            index = max(logs_id) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        log.id = id
         
-        log.time = datetime.datetime.fromtimestamp(data['time'])
+        log.time = datetime.fromtimestamp(data['time'])
         log.name = data['name']
         log.action = data['action']
 
