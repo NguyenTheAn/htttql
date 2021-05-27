@@ -6,6 +6,7 @@ from .helpers.common import *
 from datetime import datetime
 import numpy as np
 from calendar import monthrange
+from .helpers.helpers import *
 
 def randomDigits(digits, index):
     lower = 10**(digits-1)
@@ -309,20 +310,23 @@ class ListProduct(APIView):
             productid = data['id']
         else:
             productid = None
-        for product in products:
-            tmp = {}
-            tmp['product_id'] = product.id
-            tmp['partner_id'] = product.partnerid.id
-            tmp['branch_id'] = product.branchid.id
-            tmp['name'] = product.name
-            tmp['ctrprice'] = product.ctrprice
-            tmp['inprice'] = product.inprice
-            tmp['outprice'] = product.outprice
-            tmp['numinbranch'] = product.numinbranch
-            if productid == product.id:
-                return_data = tmp
-                break
-            return_data.append(tmp)
+
+        return_data = getProduct(productid)
+        
+        # for product in products:
+        #     tmp = {}
+        #     tmp['product_id'] = product.id
+        #     tmp['partner_id'] = product.partnerid.id
+        #     tmp['branch_id'] = product.branchid.id
+        #     tmp['name'] = product.name
+        #     tmp['ctrprice'] = product.ctrprice
+        #     tmp['inprice'] = product.inprice
+        #     tmp['outprice'] = product.outprice
+        #     tmp['numinbranch'] = product.numinbranch
+        #     if productid == product.id:
+        #         return_data = tmp
+        #         break
+        #     return_data.append(tmp)
 
         return json_format(code = 200, message = "Success", data = return_data)
 
@@ -484,10 +488,10 @@ class GetBuyBill(APIView):
                 product = product_bill.productid
                 num = product_bill.numinbill
                 if "list_product" not in res_data.keys():
-                    res_data["list_product"] = [product.id]
+                    res_data["list_product"] = [getProduct(product.id)]
                     res_data["number_product"] = [num]
                 else:
-                    res_data["list_product"].append(product.id)
+                    res_data["list_product"].append(getProduct(product.id))
                     res_data["number_product"].append(num)
             if "id" in data.keys() and id == data['id']:
                 res = res_data
@@ -565,10 +569,10 @@ class GetSellBill(APIView):
                 product = product_bill.productid
                 num = product_bill.numinbill
                 if "list_product" not in res_data.keys():
-                    res_data["list_product"] = [product.id]
+                    res_data["list_product"] = [getProduct(product.id)]
                     res_data["number_product"] = [num]
                 else:
-                    res_data["list_product"].append(product.id)
+                    res_data["list_product"].append(getProduct(product.id))
                     res_data["number_product"].append(num)
             if "id" in data.keys() and id == data['id']:
                 res = res_data
@@ -1084,8 +1088,17 @@ class AddLog(APIView):
         log.save()
         return json_format(code = 200, message = "Success")
 
-class ProductStatistic(APIView):
+class ProductBuyStatistic(APIView):
     def get(self, request, format=None):
         data = request.data
         branchid = data['branchid']
-        
+        productbuybills = ProductBuyBill.objects.filter(productid__branchid__id = branchid)
+        sum_ammount = 0 # cần số lượng và giá trung binh mỗi sản phẩm
+        for productbuybill in productbuybills:
+            product = productbuybill.productid
+            numinbill = productbuybill.numinbill
+
+
+        return json_format(code = 200, message = "Success")
+
+# thông kê các loại thuế
