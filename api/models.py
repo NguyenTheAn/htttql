@@ -91,6 +91,8 @@ class Document(models.Model):
 class Employee(models.Model):
     id = models.CharField(db_column='ID', primary_key=True, max_length=255)  # Field name made lowercase.
     departmentid = models.ForeignKey(Department, models.CASCADE, db_column='DepartmentID')  # Field name made lowercase.
+    bankid =  models.CharField(db_column='BankID', max_length=255, blank=True, null=True)
+    bankname = models.CharField(db_column='BankName', max_length=255, blank=True, null=True)
     taxid = models.ForeignKey("Tax", models.CASCADE, db_column='TaxID')  # Field name made lowercase.
     name = models.CharField(db_column='Name', max_length=255, blank=True, null=True)  # Field name made lowercase.
     phone = models.CharField(db_column='Phone', max_length=255, blank=True, null=True)  # Field name made lowercase.

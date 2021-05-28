@@ -431,11 +431,13 @@ class GetBuyBill(APIView):
                 product = product_bill.productid
                 num = product_bill.numinbill
                 if "list_product" not in res_data.keys():
-                    res_data["list_product"] = [getProduct(product.id)]
-                    res_data["number_product"] = [num]
+                    product_data = getProduct(product.id)
+                    product_data["numinbill"] = num
+                    res_data["list_product"] = [product_data]
                 else:
-                    res_data["list_product"].append(getProduct(product.id))
-                    res_data["number_product"].append(num)
+                    product_data = getProduct(product.id)
+                    product_data["numinbill"] = num
+                    res_data["list_product"].append(product_data)
             if "id" in data.keys() and id == data['id']:
                 res = res_data
                 break
@@ -523,11 +525,13 @@ class GetSellBill(APIView):
                 product = product_bill.productid
                 num = product_bill.numinbill
                 if "list_product" not in res_data.keys():
-                    res_data["list_product"] = [getProduct(product.id)]
-                    res_data["number_product"] = [num]
+                    product_data = getProduct(product.id)
+                    product_data["numinbill"] = num
+                    res_data["list_product"] = [product_data]
                 else:
-                    res_data["list_product"].append(getProduct(product.id))
-                    res_data["number_product"].append(num)
+                    product_data = getProduct(product.id)
+                    product_data["numinbill"] = num
+                    res_data["list_product"].append(product_data)
             if "id" in data.keys() and id == data['id']:
                 res = res_data
                 break
@@ -790,6 +794,8 @@ class AddEmployee(APIView):
         employee.phone = data['employee_phone']
         employee.email = data['employee_email']
         employee.address = data['employee_address']
+        employee.bankid = data['bankid']
+        employee.bankname = data['bankname']
         employee.sex = data['employee_sex']
         employee.exp = data['employee_exp']
         employee.salarydefault = data['employee_salary']
@@ -831,6 +837,8 @@ class EditInfoEmployee(APIView):
         employee.name = data['employee_name']
         employee.phone = data['employee_phone']
         employee.email = data['employee_email']
+        employee.bankid = data['bankid']
+        employee.bankname = data['bankname']
         employee.address = data['employee_address']
         employee.sex = data['employee_sex']
         employee.exp = data['employee_exp']
