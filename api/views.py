@@ -561,3 +561,13 @@ class AddLog(APIView):
 
         log.save()
         return json_format(code = 200, message = "Success")
+
+class SummarySalaryTable(APIView):
+    def get(self, request, format=None):
+        salary_tables = [{'salary_table_id': salary_table.id,
+                        'total': salary_table.total,
+                        'note': salary_table.note,
+                        'start_date': salary_table.startdate,
+                        'end_date': salary_table.enddate} for salary_table in Salarytable.objects.all()]
+
+        return json_format(code = 200, message = "Success", data = salary_tables)

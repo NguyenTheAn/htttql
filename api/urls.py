@@ -49,4 +49,5 @@ urlpatterns = [
     path('get_log', GetLog.as_view(), name = "get_log"),
     path('edit_log', EditLog.as_view(), name = "edit_log"),
     path('delete_log', DeleteLog.as_view(), name = "delete_log"),
+    path('summary_salary', SummarySalaryTable.as_view(), name = "summary_salary"),
 ]
