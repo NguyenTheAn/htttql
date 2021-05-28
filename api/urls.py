@@ -36,6 +36,7 @@ urlpatterns = [
     path('edit_product_info', EditProductInfo.as_view(), name = "edit_product_info"),
     path('delete_product', DeleteProduct.as_view(), name = "delete_product"),
     path('getproducts', ListProduct.as_view(), name = "getproducts"),
+    path('getproductsbypartner', GetProductByPartner.as_view(), name = "getproductsbypartner"),
 
     # branch
     path('get_branch', GetListBranch.as_view(), name = "get_branch"),
@@ -91,5 +92,5 @@ urlpatterns = [
     path('delete_log', DeleteLog.as_view(), name = "delete_log"),
 
     # statistic
-    # path('product_buy_statistic', ProductBuyStatistic.as_view(), name = "productbuystatistic"),
+    path('taxstatisticbybranch', TaxStatisticByBranch.as_view(), name = "taxstatisticbybranch"),
 ]

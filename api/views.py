@@ -265,6 +265,16 @@ class ListProduct(APIView):
 
         return json_format(code = 200, message = "Success", data = return_data)
 
+class GetProductByPartner(APIView):
+    def get(self, request, format=None):
+        return_data = []
+        data = request.data
+        partnerid = data['partnerid']
+        products = Product.objects.filter(partnerid__id = partnerid)
+        for product in products:
+            return_data.append(getProduct(product.id))
+        return json_format(code = 200, message = "Success", data = return_data)
+
 class EditProductInfo(APIView):
     def post(self, request, format = None):
         data = request.data
@@ -1058,8 +1068,9 @@ class TaxStatisticByBranch(APIView):
             return json_format(code = 400, message = "You do not have right to access")
         branch = Branch.objects.get(id = branchid)
         tax = Tax.objects.get(id=taxid)
-        if "TNCN" in tax.name:
-            pass
+        if "TNCN" in tax.taxtype:
+            time_now = datetime.datetime.now()
+            print(time_now.month)
 
         return json_format(code = 200, message = "Success")
 
