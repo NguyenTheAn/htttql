@@ -39,6 +39,11 @@ def getUser(userid = None):
             tmp["address"] = user.address
             tmp["sex"] = user.sex
             tmp["type"] = account_type
+            if account_type == "Manager":
+                tmp['branch'] = getBranch(Manager.objects.get(userid__id = user.id).branchid.id)
+            elif account_type == "Accountant":
+                tmp['branch'] = getBranch(Accountant.objects.get(userid__id = user.id).branchid.id)
+                
             if userid == user.id:
                 return_data = tmp
                 break
