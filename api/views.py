@@ -407,7 +407,11 @@ class GetBuyBill(APIView):
         data = request.data
         for doc in Document.objects.all():
             id = doc.id
-            bill = BuyBill.objects.get(documentid__id=id)
+            bill = BuyBill.objects.filter(documentid__id=id)
+            if bill.count() != 0:
+                bill = bill[0]
+            else:
+                continue
             product_bills = ProductBuyBill.objects.filter(buybilldocumentid__documentid__id = id)
             res_data = {
                 "documentid": bill.documentid.id,
@@ -443,7 +447,12 @@ class AddSellBill(APIView):
 
         list_product = data['list_product']
         number_product = data['number_product']
+        list_price = data['list_price']
         products = [Product.objects.get(id = productid) for productid in list_product]
+
+        amount = 0
+        for price, num in zip(number_product, list_price):
+            amount += (price*num)
         
         doc = Document()
         doc.accountantuserid = user
@@ -452,6 +461,7 @@ class AddSellBill(APIView):
         doc.time = datetime.datetime.now()
         doc.name = data["name"]
         doc.content = data['content']
+        doc.amount = amount
         doc.save()
 
         bill = SellBill()
@@ -485,7 +495,11 @@ class GetSellBill(APIView):
         data = request.data
         for doc in Document.objects.all():
             id = doc.id
-            bill = SellBill.objects.get(documentid__id=id)
+            bill = SellBill.objects.filter(documentid__id=id)
+            if bill.count() != 0:
+                bill = bill[0]
+            else:
+                continue
             product_bills = ProductSellBill.objects.filter(sellbilldocumentid__documentid__id = id)
             res_data = {
                 "documentid": bill.documentid.id,
@@ -493,6 +507,7 @@ class GetSellBill(APIView):
                 "cusaddress": bill.cusaddress,
                 "cusphone": bill.cusphone,
                 "payment": bill.payment,
+                "amount": bill.documentid.amount
             }
             for product_bill in product_bills:
                 product = product_bill.productid
@@ -527,8 +542,8 @@ class AddLend(APIView):
         lendrec.chiefmanageruserid = Chiefmanager.objects.get(userid__id = data['userid'])
         lendrec.desc = data['desc']
         lendrec.amount = data['amount']
-        lendrec.time = datetime.strptime(data['time'], "%d/%m/%Y")
-        lendrec.expired = datetime.strptime(data['expired'], "%d/%m/%Y")
+        lendrec.time = datetime.datetime.strptime(data['time'], "%d/%m/%Y")
+        lendrec.expired = datetime.datetime.strptime(data['expired'], "%d/%m/%Y")
         lendrec.interest_rate = data['interest_rate']
         lendrec.save()
         return json_format(code = 200, message = "Success")
@@ -536,23 +551,11 @@ class AddLend(APIView):
 class GetLend(APIView):
     def get(self, request, format = None):
         data = request.data
-        lendrecs = [lendrec for lendrec in Lendrec.objects.all()]
-        redata = []
-        for lendrec in lendrecs:
-            tmp = dict()
-            tmp['id'] = lendrec.id
-            tmp["partnerid"] = lendrec.partnerid.id
-            tmp['userid'] = lendrec.chiefmanageruserid.userid.id
-            tmp['desc'] = lendrec.desc
-            tmp['amount'] = lendrec.amount
-            tmp['time'] = lendrec.time.strftime("%d/%m/%Y")
-            tmp['expired'] = lendrec.expired.strftime("%d/%m/%Y")
-            tmp['interest_rate'] = lendrec.interest_rate
-
-            if "id" in data.keys() and data['id'] == lendrec.id:
-                redata = tmp
-                break
-            redata.append(tmp)
+        if 'id' in data.keys():
+            lendid = data['id']
+        else:
+            lendid = None
+        redata = getLend(lendid)
         return json_format(code = 200, message = "Success", data = redata)
 
 class EditLend(APIView):
@@ -562,18 +565,72 @@ class EditLend(APIView):
 
         lendrec.desc = data['desc'] 
         lendrec.amount = data['amount'] 
-        lendrec.time = datetime.strptime(data['time'], "%d/%m/%Y")
-        lendrec.expired = datetime.strptime(data['expired'], "%d/%m/%Y")
+        lendrec.time = datetime.datetime.strptime(data['time'], "%d/%m/%Y")
+        lendrec.expired = datetime.datetime.strptime(data['expired'], "%d/%m/%Y")
         lendrec.interest_rate = data['interest_rate'] 
         lendrec.save()
 
         return json_format(code = 200, message = "Success")
 
+class AddLendPaying(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        lendpayings = [lendpaying for lendpaying in LendPaying.objects.all()]
+        lendpayingids = [int(lendpaying.id) for lendpaying in lendpayings]
+        lendrec = Lendrec.objects.get(id = data['lendrecid'])
+
+        lendpaying = LendPaying()
+        if len(lendpayingids) != 0:
+            index = max(lendpayingids) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        lendpaying.id = id
+        lendpaying.lendrecid = lendrec
+        lendpaying.interestamount = data['interest_amount']
+        lendpaying.payingamount = data['payingamount']
+        lendpaying.time = datetime.datetime.now()
+        lendpaying.payment = data['payment']
+        lendpaying.save()
+        return json_format(code = 200, message = "Success")
+
+class AddLoanPaying(APIView):
+    def post(self, request, format = None):
+        data = request.data
+        loanpayings = [loanpaying for loanpaying in LoanPaying.objects.all()]
+        loanpayingids = [int(loanpaying.id) for loanpaying in loanpayings]
+        loanrec = Loanrec.objects.get(id = data['loanrecid'])
+
+        loanpaying = LoanPaying()
+        if len(loanpayingids) != 0:
+            index = max(loanpayingids) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        loanpaying.id = id
+        loanpaying.loanrecid = loanrec
+        loanpaying.interestamount = data['interest_amount']
+        loanpaying.payingamount = data['payingamount']
+        loanpaying.time = datetime.datetime.now()
+        loanpaying.payment = data['payment']
+        loanpaying.save()
+        return json_format(code = 200, message = "Success")
+
+class GetLendPaying(APIView):
+    def get(self, request, format = None):
+        data = request.data
+        if "id" in data.keys():
+            lenpayingid = data['id']
+        else:
+            lenpayingid = None
+        lenpayings = getLendPaying(lenpayingid)
+        return json_format(code = 200, message = "Success", data = lenpayings)
+
 class AddLoan(APIView):
     def post(self, request, format = None):
         data = request.data
         loanrecs = [loanrec for loanrec in Loanrec.objects.all()]
-        loanrecids = [int(loanrec.id) for loanrec in loanrecs.objects.all()]
+        loanrecids = [int(loanrec.id) for loanrec in Loanrec.objects.all()]
 
         loanrec = Loanrec()
         if len(loanrecids) != 0:
@@ -585,8 +642,8 @@ class AddLoan(APIView):
         loanrec.chiefmanageruserid = Chiefmanager.objects.get(userid__id = data['userid'])
         loanrec.desc = data['desc']
         loanrec.amount = data['amount']
-        loanrec.time = datetime.strptime(data['time'], "%d/%m/%Y")
-        loanrec.expired = datetime.strptime(data['expired'], "%d/%m/%Y")
+        loanrec.time = datetime.datetime.strptime(data['time'], "%d/%m/%Y")
+        loanrec.expired = datetime.datetime.strptime(data['expired'], "%d/%m/%Y")
         loanrec.interest_rate = data['interest_rate']
         loanrec.save()
 
@@ -595,22 +652,21 @@ class AddLoan(APIView):
 class GetLoan(APIView):
     def get(self, request, format = None):
         data = request.data
-        loanrecs = [loanrec for loanrec in Loanrec.objects.all()]
-        redata = []
-        for loanrec in loanrecs:
-            tmp = dict()
-            tmp['id'] = loanrec.id
-            tmp['userid'] = loanrec.chiefmanageruserid.userid.id
-            tmp['desc'] = loanrec.desc
-            tmp['amount'] = loanrec.amount
-            tmp['time'] = loanrec.time.strftime("%d/%m/%Y")
-            tmp['expired'] = loanrec.expired.strftime("%d/%m/%Y")
-            tmp['interest_rate'] = loanrec.interest_rate
+        if 'id' in data.keys():
+            loanid = data['id']
+        else:
+            loanid = None
+        redata = getLoan(loanid)
+        return json_format(code = 200, message = "Success", data = redata)
 
-            if "id" in data.keys() and data['id'] == loanrec.id:
-                redata = tmp
-                break
-            redata.append(tmp)
+class GetLoanPaying(APIView):
+    def get(self, request, format = None):
+        data = request.data
+        if 'id' in data.keys():
+            loanpayingid = data['id']
+        else:
+            loanpayingid = None
+        redata = getLoanPaying(loanpayingid)
         return json_format(code = 200, message = "Success", data = redata)
 
 class EditLoan(APIView):
@@ -620,8 +676,8 @@ class EditLoan(APIView):
 
         loanrec.desc = data['desc'] 
         loanrec.amount = data['amount'] 
-        loanrec.time = datetime.strptime(data['time'], "%d/%m/%Y")
-        loanrec.expired = datetime.strptime(data['expired'], "%d/%m/%Y")
+        loanrec.time = datetime.datetime.strptime(data['time'], "%d/%m/%Y")
+        loanrec.expired = datetime.datetime.strptime(data['expired'], "%d/%m/%Y")
         loanrec.interest_rate = data['interest_rate'] 
         loanrec.save()
 
@@ -991,16 +1047,19 @@ class AddLog(APIView):
         log.save()
         return json_format(code = 200, message = "Success")
 
-class ProductBuyStatistic(APIView):
+
+class TaxStatisticByBranch(APIView):
     def get(self, request, format=None):
         data = request.data
         branchid = data['branchid']
-        productbuybills = ProductBuyBill.objects.filter(productid__branchid__id = branchid)
-        sum_ammount = 0 # cần số lượng và giá trung binh mỗi sản phẩm
-        for productbuybill in productbuybills:
-            product = productbuybill.productid
-            numinbill = productbuybill.numinbill
-
+        userid = data['userid']
+        taxid = data['taxid']
+        if Manager.objects.filter(userid__id = userid).count() == 0:
+            return json_format(code = 400, message = "You do not have right to access")
+        branch = Branch.objects.get(id = branchid)
+        tax = Tax.objects.get(id=taxid)
+        if "TNCN" in tax.name:
+            pass
 
         return json_format(code = 200, message = "Success")
 
