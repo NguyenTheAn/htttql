@@ -58,6 +58,9 @@ urlpatterns = [
     path('addsellbill', AddSellBill.as_view(), name = "add_sell_bill"),
     path('getsellbill', GetSellBill.as_view(), name = "get_sell_bill"),
 
+    # receipt
+    path('add_receipt', AddReceipt.as_view(), name = "add_receipt"),
+    path('get_receipt', GetReceipt.as_view(), name = "get_receipt"),
 
     path('add_employee', AddEmployee.as_view(), name = "add_employee"),
     path('get_employee', GetEmployee.as_view(), name = "get_employee"),
@@ -78,7 +81,8 @@ urlpatterns = [
     path('edit_log', EditLog.as_view(), name = "edit_log"),
     path('delete_log', DeleteLog.as_view(), name = "delete_log"),
     path('summary_salary', SummarySalaryTable.as_view(), name = "summary_salary"),
-
+    path('summary_buy_product', SummaryBuyProduct.as_view(), name = "summary_buy_product"),
+    path('summary_sell_product', SummarySellProduct.as_view(), name = "summary_sell_product"),
     # statistic
     path('product_buy_statistic', ProductBuyStatistic.as_view(), name = "productbuystatistic"),
 ]

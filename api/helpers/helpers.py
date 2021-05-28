@@ -147,3 +147,16 @@ def getTax(taxid):
                    'percentage': tax.percentage} for tax in Tax.objects.all()]
 
     return taxes
+
+def getReceipt(documentid = None):
+    if documentid is not None:
+        receipt = Receipt.objects.get(documentid__id=documentid)
+        receipts = {'receipttype': receipt.receipttype,
+                   'desc': receipt.desc,
+                   'documentid': receipt.documentid.id}
+    else:
+        receipts = [{'receipttype': receipt.receipttype,
+                   'desc': receipt.desc,
+                   'documentid': receipt.documentid.id} for receipt in Receipt.objects.all()]
+
+    return receipts

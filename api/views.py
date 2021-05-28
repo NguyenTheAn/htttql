@@ -1000,6 +1000,75 @@ class SummarySalaryTable(APIView):
                         'end_date': salary_table.enddate} for salary_table in Salarytable.objects.all()]
 
         return json_format(code = 200, message = "Success", data = salary_tables)
+
+class SummaryBuyProduct(APIView):
+    def get(self, request, format=None):
+        data = request.data
+        products = getProduct()
+        return_data = {}
+
+        for product in products:
+            product_buy_bills = ProductBuyBill.objects.filter(productid=product['product_id'])
+            month_bills = {}
+            for bill in product_buy_bills:
+                document = bill.buybilldocumentid.documentid
+                time = document.time.strftime("%m/%Y")
+                if time in month_bills.keys():
+                    month_bills[time] += document.amount * product['inprice']
+                else:
+                    month_bills[time] = document.amount * product['inprice']
+            return_data[product['product_id']] = month_bills
+
+
+        return json_format(code = 200, message = "Success", data = return_data)
+
+class SummarySellProduct(APIView):
+    def get(self, request, format=None):
+        data = request.data
+        products = getProduct()
+        return_data = {}
+
+        for product in products:
+            product_sell_bills = ProductSellBill.objects.filter(productid=product['product_id'])
+            month_bills = {}
+            for bill in product_sell_bills:
+                document = bill.sellbilldocumentid.documentid
+                time = document.time.strftime("%m/%Y")
+                if time in month_bills.keys():
+                    month_bills[time] += document.amount * product['outprice']
+                else:
+                    month_bills[time] = document.amount * product['outprice']
+            return_data[product['product_id']] = month_bills
+
+
+        return json_format(code = 200, message = "Success", data = return_data)
+
+class AddReceipt(APIView):
+    def post(self, request, format=None):
+        data = request.data
+        receipt = Receipt()
+
+        receipt.receipttype = data['receipttype']
+        receipt.desc = data['desc']
+
+        document = Document.objects.get(id=data['documentid'])
+
+        receipt.documentid = document
+        receipt.save()
+
+        return json_format(code = 200, message = "Success")
+
+class GetReceipt(APIView):
+    def get(self, request, format=None):
+        data = request.data
+        if 'documentid' in data.keys():
+            documentid = data['documentid']
+        else:
+            documentid = None
+        receipts = getReceipt(documentid)
+
+        return json_format(code = 200, message = "Success", data=receipts)
+
 class ProductBuyStatistic(APIView):
     def get(self, request, format=None):
         data = request.data
