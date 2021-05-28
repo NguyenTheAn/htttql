@@ -18,19 +18,47 @@ from django.urls import path, include
 from .views import *
 
 urlpatterns = [
-    path('create_acc', CreateAccount.as_view(), name = "create_acc"),
-    path('delete_acc', DeleteAcc.as_view(), name = "delete_acc"),
+    # partner
+    path('add_partner', AddPartner.as_view(), name = "add_partner"),
+    path('edit_partner_info', EditPartnerInfo.as_view(), name = "edit_partner_info"),
+    path('delete_partner', DeletePartner.as_view(), name = "delete_partner"),
+    path('getpartners', ListPartner.as_view(), name = "getpartners"),
+
+    # Account
     path('signin', SigninViews.as_view(), name = "signin"),
-    path('users', ListUsers.as_view(), name = "listuser"),
+    path('create_acc', CreateAccount.as_view(), name = "create_acc"),
+    path('getusers', ListUsers.as_view(), name = "listuser"),
     path('edit', EditInfo.as_view(), name = "editinfo"),
+    path('delete_acc', DeleteAcc.as_view(), name = "delete_acc"),
+
+    # product
+    path('add_product', AddProduct.as_view(), name = "add_product"),
+    path('edit_product_info', EditProductInfo.as_view(), name = "edit_product_info"),
+    path('delete_product', DeleteProduct.as_view(), name = "delete_product"),
+    path('getproducts', ListProduct.as_view(), name = "getproducts"),
+
+    # branch
     path('get_branch', GetListBranch.as_view(), name = "get_branch"),
     path('add_branch', AddBranch.as_view(), name = "add_branch"),
     path('delete_branch', DeleteBranch.as_view(), name = "delete_branch"),
     path('edit_branch', EditInfoBranch.as_view(), name = "edit_branch"),
+
+    # department
     path('add_department', AddDepartment.as_view(), name = "add_department"),
     path('get_department', GetDepartment.as_view(), name = "get_department"),
     path('edit_department', EditInfoDepartment.as_view(), name = "edit_department"),
     path('delete_department', DeleteDepartment.as_view(), name = "delete_department"),
+
+    # buy Bill
+    path('addbuybill', AddBuyBill.as_view(), name = "add_buy_bill"),
+    path('getbuybill', GetBuyBill.as_view(), name = "get_buy_bill"),
+    path('deletedocument', DeleteDocument.as_view(), name = "delete_document"),
+
+    # sell bill
+    path('addsellbill', AddSellBill.as_view(), name = "add_sell_bill"),
+    path('getsellbill', GetSellBill.as_view(), name = "get_sell_bill"),
+
+
     path('add_employee', AddEmployee.as_view(), name = "add_employee"),
     path('get_employee', GetEmployee.as_view(), name = "get_employee"),
     path('delete_employee', DeleteEmployee.as_view(), name = "delete_employee"),
@@ -50,4 +78,7 @@ urlpatterns = [
     path('edit_log', EditLog.as_view(), name = "edit_log"),
     path('delete_log', DeleteLog.as_view(), name = "delete_log"),
     path('summary_salary', SummarySalaryTable.as_view(), name = "summary_salary"),
+
+    # statistic
+    path('product_buy_statistic', ProductBuyStatistic.as_view(), name = "productbuystatistic"),
 ]
