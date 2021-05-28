@@ -58,11 +58,11 @@ urlpatterns = [
     path('addsellbill', AddSellBill.as_view(), name = "add_sell_bill"),
     path('getsellbill', GetSellBill.as_view(), name = "get_sell_bill"),
 
-<<<<<<< HEAD
     # receipt
     path('add_receipt', AddReceipt.as_view(), name = "add_receipt"),
     path('get_receipt', GetReceipt.as_view(), name = "get_receipt"),
-=======
+    path('summary_receipt', SummaryReceipt.as_view(), name = "summary_receipt"),
+
     # lend loan
     path('addlend', AddLend.as_view(), name = "addlend"),
     path('getlend', GetLend.as_view(), name = "getlend"),
@@ -75,7 +75,6 @@ urlpatterns = [
     path('addloanpaying', AddLoanPaying.as_view(), name = "addloanpaying"),
     path('getloanpaying', GetLoanPaying.as_view(), name = "getloanpaying"),
 
->>>>>>> 0f851667bf8834735c1ed7835124d8f845f5c36c
 
     path('add_employee', AddEmployee.as_view(), name = "add_employee"),
     path('get_employee', GetEmployee.as_view(), name = "get_employee"),

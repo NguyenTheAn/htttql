@@ -148,7 +148,6 @@ def getTax(taxid):
 
     return taxes
 
-<<<<<<< HEAD
 def getReceipt(documentid = None):
     if documentid is not None:
         receipt = Receipt.objects.get(documentid__id=documentid)
@@ -161,7 +160,6 @@ def getReceipt(documentid = None):
                    'documentid': receipt.documentid.id} for receipt in Receipt.objects.all()]
 
     return receipts
-=======
 def getLend(lendid = None):
     lendrecs = [lendrec for lendrec in Lendrec.objects.all()]
     redata = []
@@ -244,4 +242,3 @@ def getLoanPaying(loanpayingid = None):
             'payment' : loanpaying.payment
         }
     return loanpayings
->>>>>>> 0f851667bf8834735c1ed7835124d8f845f5c36c

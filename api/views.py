@@ -1047,7 +1047,6 @@ class AddLog(APIView):
         log.save()
         return json_format(code = 200, message = "Success")
 
-<<<<<<< HEAD
 class SummarySalaryTable(APIView):
     def get(self, request, format=None):
         salary_tables = [{'salary_table_id': salary_table.id,
@@ -1091,6 +1090,7 @@ class SummarySellProduct(APIView):
             for bill in product_sell_bills:
                 document = bill.sellbilldocumentid.documentid
                 time = document.time.strftime("%m/%Y")
+                print(type(document.amount), type(product['outprice']))
                 if time in month_bills.keys():
                     month_bills[time] += document.amount * product['outprice']
                 else:
@@ -1126,11 +1126,20 @@ class GetReceipt(APIView):
 
         return json_format(code = 200, message = "Success", data=receipts)
 
-class ProductBuyStatistic(APIView):
-=======
+
+class SummaryReceipt(APIView):
+    def get(self, request, format=None):
+        data = request.data
+        receipts = [receipt for receipt in Receipt.objects.filter(receipttype=data['receipttype'])]
+        total = 0
+        for receipt in receipts:
+            total += receipt.documentid.amount
+        return_data = {data['receipttype']: total}
+
+        return json_format(code = 200, message = "Success", data = return_data)
+# class ProductBuyStatistic(APIView):
 
 class TaxStatisticByBranch(APIView):
->>>>>>> 0f851667bf8834735c1ed7835124d8f845f5c36c
     def get(self, request, format=None):
         data = request.data
         branchid = data['branchid']
