@@ -3,7 +3,7 @@ from rest_framework.response import Response
 import random
 from .models import *
 from .helpers.common import *
-from datetime import datetime
+import datetime
 import numpy as np
 from calendar import monthrange
 from .helpers.helpers import *
@@ -15,29 +15,11 @@ def randomDigits(digits, index):
 class ListUsers(APIView):
     def get(self, request, format=None):
         data = request.data
-        users = [user for user in User.objects.all()]
-        type_acc = np.array(["Manager", "Chiefmanager", "Accountant", "Admin"])
-        return_data = []
         if "id" in data.keys():
             userid = data['id']
         else:
             userid = None
-        for user in users:
-            list1 = np.array([Manager.objects.filter(userid=user.id).count(), Chiefmanager.objects.filter(userid=user.id).count(), \
-                        Accountant.objects.filter(userid=user.id).count(), Admin.objects.filter(userid=user.id).count()])
-            account_type = type_acc[list1 != 0][0]
-            tmp = {}
-            tmp["user_id"] = user.id
-            tmp["username"] = user.username
-            tmp["password"] = user.password
-            tmp["email"] = user.email
-            tmp["address"] = user.address
-            tmp["sex"] = user.sex
-            tmp["type"] = account_type
-            if userid == user.id:
-                return_data = tmp
-                break
-            return_data.append(tmp)
+        return_data = getUser(userid)
 
         return json_format(code = 200, message = "Success", data = return_data)
 
@@ -73,14 +55,14 @@ class CreateAccount(APIView):
             a.save()
         elif data['role'] == "Manager":
             branch = Branch.objects.get(id=data['branch_id'])
-            m = Manager(userid = user, created = datetime.now(), branchid = branch)
+            m = Manager(userid = user, created = datetime.datetime.now(), branchid = branch)
             m.save()
         elif data['role'] == "Chiefmanager":
             cm = Chiefmanager(userid = user)
             cm.save()
         elif data['role'] == "Accountant":
             branch = Branch.objects.get(id=data['branch_id'])
-            a = Accountant(created = datetime.now(), userid = user, branchid = branch)
+            a = Accountant(created = datetime.datetime.now(), userid = user, branchid = branch)
             a.save()
         
         return json_format(code = 200, message = "Success")
@@ -89,24 +71,10 @@ class SigninViews(APIView):
     
     def post(self, request, format=None):
         users = [user for user in User.objects.all()]
-        type_acc = np.array(["Manager", "Chiefmanager", "Accountant", "Admin"])
-        instance = np.array([Manager, Chiefmanager, Accountant, Admin])
         data = request.data
         for user in users:
-            
             if user.username == data["username"] and user.password == data["password"]:
-                list1 = np.array([Manager.objects.filter(userid=user.id).count(), Chiefmanager.objects.filter(userid=user.id).count(), \
-                    Accountant.objects.filter(userid=user.id).count(), Admin.objects.filter(userid=user.id).count(),])
-                account_type = type_acc[list1 != 0][0]
-                data = {"id": user.id,
-                        "account_type" : account_type}
-                if account_type != "Chiefmanager" and account_type != "Admin":
-                    data["branchid"] = instance[list1 != 0][0].objects.get(userid__id = user.id).branchid.id
-
-                data["username"] = user.username
-                data["email"] = user.email
-                data["address"] = user.address
-                data["sex"] = user.sex
+                data = getUser(user.id)
 
                 return json_format(code = 200, message = "Login successfully", data = data)
         
@@ -166,26 +134,13 @@ class AddPartner(APIView):
 
 class ListPartner(APIView):
     def get(self, request, format=None):
-        partners = [partner for partner in Partner.objects.all()]
         return_data = []
         data = request.data
         if "id" in data.keys():
            partnerid = data['id']
         else:
            partnerid = None
-        for partner in partners:
-            tmp = {}
-            tmp["partner_id"] = partner.id
-            tmp["partnername"] = partner.name
-            tmp["taxid"] = partner.taxid
-            tmp["desc"] = partner.desc
-            tmp["address"] = partner.address
-            tmp["email"] = partner.email
-            tmp["phone"] = partner.phone
-            if partnerid == partner.id:
-                return_data = tmp
-                break
-            return_data.append(tmp)
+        return_data = getPartner(partnerid)
 
         return json_format(code = 200, message = "Success", data = return_data)
 
@@ -215,15 +170,11 @@ class DeletePartner(APIView):
 class GetListBranch(APIView):
     def get(self, request, format=None):
         data = request.data
-        if "branch_id" not in data.keys():
-            branchs = [{'branch_id': branch.id,
-                        'branch_phone': branch.phone,
-                        'branch_location': branch.location} for branch in Branch.objects.all()]
+        if "branchid" in data.keys():
+           branchid = data['id']
         else:
-            branch =  Branch.objects.get(id=data['id'])
-            branchs = {'branch_id': branch.id,
-                        'branch_phone': branch.phone,
-                        'branch_location': branch.location}
+           branchid = None
+        branchs = getBranch(branchid)
         return json_format(code = 200, message = "Success", data = branchs)
 
 class AddBranch(APIView):
@@ -303,7 +254,6 @@ class AddProduct(APIView):
 
 class ListProduct(APIView):
     def get(self, request, format=None):
-        products = [product for product in Product.objects.all()]
         return_data = []
         data = request.data
         if "id" in data.keys():
@@ -312,21 +262,6 @@ class ListProduct(APIView):
             productid = None
 
         return_data = getProduct(productid)
-        
-        # for product in products:
-        #     tmp = {}
-        #     tmp['product_id'] = product.id
-        #     tmp['partner_id'] = product.partnerid.id
-        #     tmp['branch_id'] = product.branchid.id
-        #     tmp['name'] = product.name
-        #     tmp['ctrprice'] = product.ctrprice
-        #     tmp['inprice'] = product.inprice
-        #     tmp['outprice'] = product.outprice
-        #     tmp['numinbranch'] = product.numinbranch
-        #     if productid == product.id:
-        #         return_data = tmp
-        #         break
-        #     return_data.append(tmp)
 
         return json_format(code = 200, message = "Success", data = return_data)
 
@@ -367,17 +302,11 @@ class DeleteProduct(APIView):
 class GetDepartment(APIView):
     def get(self, request, format=None):
         data = request.data
-        if "department_id" in data.keys():
-            department = Department.objects.get(id=data['department_id'])
-            departments = {'department_id': department.id,
-                        'branch_id': department.branchid.id,
-                        'department_name': department.name,
-                        'department_numofemployees': department.numofemployees} 
+        if "departmentid" in data.keys():
+            departmentid = data['departmentid']
         else:
-            departments = [{'department_id': department.id,
-                            'branch_id': department.branchid.id,
-                            'department_name': department.name,
-                            'department_numofemployees': department.numofemployees} for department in Department.objects.all()]
+            departmentid = None
+        departments = getDepartment(departmentid)
 
         return json_format(code = 200, message = "Success", data = departments)
 
@@ -445,7 +374,7 @@ class AddBuyBill(APIView):
         doc.accountantuserid = user
         doc.id = randomDigits(8, len(Document.objects.all()))
         doc.type = "bill"
-        doc.time = datetime.now()
+        doc.time = datetime.datetime.now()
         doc.name = data["name"]
         doc.content = data['content']
         doc.amount = amount
@@ -520,7 +449,7 @@ class AddSellBill(APIView):
         doc.accountantuserid = user
         doc.id = randomDigits(8, len(Document.objects.all()))
         doc.type = "bill"
-        doc.time = datetime.now()
+        doc.time = datetime.datetime.now()
         doc.name = data["name"]
         doc.content = data['content']
         doc.save()
@@ -728,7 +657,7 @@ class GetInvestment(APIView):
         for investmentrec in investmentrecs:
             tmp = dict()
             tmp['id'] = investmentrec.id
-            tmp['userid'] = investmentrec.chiefmanageruserid.userid.id
+            tmp['userid'] = getUser(investmentrec.chiefmanageruserid.userid.id)
             tmp['desc'] = investmentrec.desc
             tmp['amount'] = investmentrec.amount
             tmp['time'] = investmentrec.time.strftime("%d/%m/%Y")
@@ -810,30 +739,10 @@ class GetEmployee(APIView):
     def get(self, request, format=None):
         data = request.data
         if "employee_id" in data.keys():
-            employee = Employee.objects.get(id=data['employee_id'])
-            employees = {'employee_id': employee.id,
-                        'department_id': employee.departmentid.id,
-                        'employee_name': employee.name,
-                        'employee_taxid': employee.taxid.id,
-                        'employee_phone': employee.phone,
-                        'employee_email': employee.email,
-                        'employee_address': employee.address,
-                        'employee_sex': employee.sex,
-                        'employee_exp': employee.exp,
-                        'employee_salary': employee.salarydefault,
-                        'employee_coef': employee.coef} 
+            employeeid = data['employee_id']
         else:
-            employees = [{'employee_id': employee.id,
-                        'department_id': employee.departmentid.id,
-                        'employee_name': employee.name,
-                        'employee_taxid': employee.taxid.id,
-                        'employee_phone': employee.phone,
-                        'employee_email': employee.email,
-                        'employee_address': employee.address,
-                        'employee_sex': employee.sex,
-                        'employee_exp': employee.exp,
-                        'employee_salary': employee.salarydefault,
-                        'employee_coef': employee.coef} for employee in Employee.objects.all()]
+            employeeid = None
+        employees = getEmployee(employeeid)
 
         return json_format(code = 200, message = "Success", data = employees)
 
@@ -933,7 +842,7 @@ class GetSalaryByEmployee(APIView):
     def get(self, request, format=None):
         data = request.data
         salaries = [{'salary_id': salary.id,
-                   'employeeid': salary.employeeid.id,
+                   'employeeid': getEmployee(salary.employeeid.id),
                    'salarytableid': salary.salarytableid.id,
                    'fine': salary.fine,
                    'reward': salary.reward} for salary in Salary.objects.filter(employeeid__id=data['employeeid'])]
@@ -943,20 +852,11 @@ class GetSalaryByEmployee(APIView):
 class GetSalary(APIView):
     def get(self, request, format=None):
         data = request.data
-        if 'salary_id' in data.keys():
-            salary = Salary.objects.get(id=data['salary_id'])
-            salaries = {'salary_id': salary.id,
-                    'employeeid': salary.employeeid.id,
-                    'salarytableid': salary.salarytableid.id,
-                    'fine': salary.fine,
-                    'reward': salary.reward}
-
+        if "salaryid" in data.keys():
+            salaryid = data['salaryid']
         else:
-            salaries = [{'salary_id': salary.id,
-                   'employeeid': salary.employeeid.id,
-                   'salarytableid': salary.salarytableid.id,
-                   'fine': salary.fine,
-                   'reward': salary.reward} for salary in Salary.objects.all()]
+            salaryid = None
+        salaries = getSalary(salaryid)
 
         return json_format(code = 200, message = "Success", data = salaries)
 
@@ -978,7 +878,7 @@ class GetSalaryTable(APIView):
                 break
 
         salaries = [{'salary_id': salary.id,
-                   'employeeid': salary.employeeid.id,
+                   'employeeid': getEmployee(salary.employeeid.id),
                    'salarytableid': salary.salarytableid.id,
                    'fine': salary.fine,
                    'reward': salary.reward} for salary in Salary.objects.filter(salarytableid=salary_table_id)]
@@ -1026,9 +926,12 @@ class EditTax(APIView):
 
 class GetTax(APIView):
     def get(self, request, format=None):
-        taxes = [{'tax_id': tax.id,
-                   'taxtype': tax.taxtype,
-                   'percentage': tax.percentage} for tax in Tax.objects.all()]
+        data = request.data
+        if "taxid" in data.keys():
+            taxid = data['taxid']
+        else:
+            taxid = None
+        taxes = getTax(taxid)
 
         return json_format(code = 200, message = "Success", data = taxes)
 
@@ -1058,7 +961,7 @@ class EditLog(APIView):
 class GetLog(APIView):
     def get(self, request, format=None):
         logs = [{'log_id': log.id,
-                   'userid': log.userid.id,
+                   'userid': getUser(log.userid.id),
                    'name': log.name,
                    'action': log.action,
                    'time': log.time} for log in Log.objects.all()]
@@ -1078,7 +981,7 @@ class AddLog(APIView):
         id = randomDigits(8, index)
         log.id = id
         
-        log.time = datetime.fromtimestamp(data['time'])
+        log.time = datetime.datetime.fromtimestamp(data['time'])
         log.name = data['name']
         log.action = data['action']
 
