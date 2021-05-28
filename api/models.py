@@ -238,17 +238,6 @@ class Receipt(models.Model):
     class Meta:
         db_table = 'receipt'
 
-
-class Report(models.Model):
-    id = models.CharField(db_column='ID', primary_key=True, max_length=255)  # Field name made lowercase.
-    accountantuserid = models.ForeignKey(Accountant, models.CASCADE, db_column='AccountantUserID')  # Field name made lowercase.
-    name = models.CharField(db_column='Name', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    sum = models.FloatField(db_column='Sum')  # Field name made lowercase.
-
-    class Meta:
-        db_table = 'report'
-
-
 class Salary(models.Model):
     id = models.CharField(db_column='ID', primary_key=True, max_length=255)  # Field name made lowercase.
     employeeid = models.ForeignKey(Employee, models.CASCADE, db_column='EmployeeID')  # Field name made lowercase.

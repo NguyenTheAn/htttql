@@ -148,6 +148,7 @@ def getTax(taxid):
 
     return taxes
 
+<<<<<<< HEAD
 def getReceipt(documentid = None):
     if documentid is not None:
         receipt = Receipt.objects.get(documentid__id=documentid)
@@ -160,3 +161,87 @@ def getReceipt(documentid = None):
                    'documentid': receipt.documentid.id} for receipt in Receipt.objects.all()]
 
     return receipts
+=======
+def getLend(lendid = None):
+    lendrecs = [lendrec for lendrec in Lendrec.objects.all()]
+    redata = []
+    for lendrec in lendrecs:
+        tmp = dict()
+        tmp['id'] = lendrec.id
+        tmp["partnerid"] = getPartner(lendrec.partnerid.id)
+        tmp['userid'] = getUser(lendrec.chiefmanageruserid.userid.id)
+        tmp['desc'] = lendrec.desc
+        tmp['amount'] = lendrec.amount
+        tmp['time'] = lendrec.time.strftime("%d/%m/%Y")
+        tmp['expired'] = lendrec.expired.strftime("%d/%m/%Y")
+        tmp['interest_rate'] = lendrec.interest_rate
+
+        if lendid == lendrec.id:
+            redata = tmp
+            break
+        redata.append(tmp)
+    return redata
+
+def getLendPaying(lendpayingid = None):
+    if lendpayingid is None:
+        lendpayings = [{
+            'id' : lendpaying.id,
+            'lendrec' : getLend(lendpaying.lendrecid.id),
+            'interest_amount' : lendpaying.interestamount,
+            'payingamount' : lendpaying.payingamount,
+            'time' : lendpaying.time.strftime("%d/%m/%Y"),
+            'payment' : lendpaying.payment
+        } for lendpaying in LendPaying.objects.all()]
+    else:
+        lendpaying = LendPaying.objects.get(id = lendpayingid)
+        lendpayings = {
+            'id' : lendpaying.id,
+            'lendrec' : getLend(lendpaying.lendrecid.id),
+            'interest_amount' : lendpaying.interestamount,
+            'payingamount' : lendpaying.payingamount,
+            'time' : lendpaying.time.strftime("%d/%m/%Y"),
+            'payment' : lendpaying.payment
+        }
+    return lendpayings
+
+def getLoan(loanid = None):
+    loanrecs = [loanrec for loanrec in Loanrec.objects.all()]
+    redata = []
+    for loanrec in loanrecs:
+        tmp = dict()
+        tmp['id'] = loanrec.id
+        tmp['userid'] = loanrec.chiefmanageruserid.userid.id
+        tmp['desc'] = loanrec.desc
+        tmp['amount'] = loanrec.amount
+        tmp['time'] = loanrec.time.strftime("%d/%m/%Y")
+        tmp['expired'] = loanrec.expired.strftime("%d/%m/%Y")
+        tmp['interest_rate'] = loanrec.interest_rate
+
+        if loanid == loanrec.id:
+            redata = tmp
+            break
+        redata.append(tmp)
+    return redata
+
+def getLoanPaying(loanpayingid = None):
+    if loanpayingid is None:
+        loanpayings = [{
+            'id' : loanpaying.id,
+            'lendrec' : getLend(loanpaying.loanrecid.id),
+            'interest_amount' : loanpaying.interestamount,
+            'payingamount' : loanpaying.payingamount,
+            'time' : loanpaying.time.strftime("%d/%m/%Y"),
+            'payment' : loanpaying.payment
+        } for loanpaying in LoanPaying.objects.all()]
+    else:
+        loanpaying = LoanPaying.objects.get(id = loanpayingid)
+        loanpayings = {
+            'id' : loanpaying.id,
+            'lendrec' : getLend(loanpaying.loanrecid.id),
+            'interest_amount' : loanpaying.interestamount,
+            'payingamount' : loanpaying.payingamount,
+            'time' : loanpaying.time.strftime("%d/%m/%Y"),
+            'payment' : loanpaying.payment
+        }
+    return loanpayings
+>>>>>>> 0f851667bf8834735c1ed7835124d8f845f5c36c
