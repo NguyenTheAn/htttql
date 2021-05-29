@@ -114,6 +114,7 @@ class Investmentrec(models.Model):
     time = models.DateField(db_column='Time', blank=True, null=True)  # Field name made lowercase.
     desc = models.CharField(db_column='Desc', max_length=255, blank=True, null=True)  # Field name made lowercase.
     amount = models.FloatField(db_column='Amount')  # Field name made lowercase.
+    income = models.FloatField(db_column='Income', blank=True, null=True)
 
     class Meta:
         db_table = 'investmentrec'
@@ -223,7 +224,7 @@ class BuyBill(models.Model):
 class SellBill(models.Model):
     branchid = models.ForeignKey('Branch', models.CASCADE, db_column='BranchID')
     customer = models.CharField(db_column='Customer', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    documentid = models.OneToOneField('Document', models.CASCADE, db_column='DocumentID', primary_key=True)  # Field name made lowercase.
+    documentid = models.OneToOneField(Document, models.CASCADE, db_column='DocumentID', primary_key=True)  # Field name made lowercase.
     taxid = models.ForeignKey('Tax', models.CASCADE, db_column='TaxID')  # Field name made lowercase.
     cusaddress = models.CharField(db_column='CusAddress', max_length=255, blank=True, null=True)
     payment = models.CharField(db_column='PaymentMethod', max_length=255, blank=True, null=True)

@@ -285,3 +285,51 @@ def getSalaryByEmployee(employeeid):
 
     return salaries
     
+def salaryStatisticByBranch(branchid):
+    return_list = dict()
+    time_now = datetime.datetime.now()
+    y, m = time_now.year, time_now.month
+    for i in range(1, m+1):
+        sum = 0
+        salaries = Salary.objects.filter(employeeid__departmentid__branchid__id = branchid, salarytableid__startdate__year = y, salarytableid__startdate__month = i)
+        for salary in salaries:
+            total = salary.employeeid.salarydefault * salary.employeeid.coef - salary.fine + salary.reward
+            sum += total
+        return_list["%.2d/%.4d" % (i, y)] = sum
+    return return_list
+
+def getInterestInBranch(branchid, month, year):
+    # balance = Balancerec.objects.get(accountantuserid__branchid__id = branchid)
+    salaries = Salary.objects.filter(employeeid__departmentid__branchid__id = branchid, salarytableid__startdate__year = year, salarytableid__startdate__month = month)
+    reciepts = Receipt.objects.filter(documentid__accountantuserid__branchid__id = branchid, documentid__time__year = year, documentid__time__month = month)
+    buybills = BuyBill.objects.filter(branchid__id = branchid, documentid__time__year = year, documentid__time__month = month)
+    sellbills = SellBill.objects.filter(branchid__id = branchid, documentid__time__year = year, documentid__time__month = month)
+    data = {}
+    interest = 0
+    s = 0
+    for salary in salaries:
+        total = (salary.employeeid.salarydefault * salary.employeeid.coef - salary.fine + salary.reward)*(1 - salary.employeeid.taxid.percentage/100)
+        interest -= total
+        s += total
+    data['salary'] = s
+    s = 0
+    for reciept in reciepts:
+        interest -= reciept.documentid.amount
+        s += reciept.documentid.amount
+    data['reciept'] = s
+    s = 0
+    for buybill in buybills:
+        interest -= buybill.documentid.amount
+        s += buybill.documentid.amount
+    data['buybill'] = s
+    s = 0
+    gtgt = 0
+    for sellbill in sellbills:
+        interest -= sellbill.documentid.amount
+        s += sellbill.documentid.amount
+        tax_pay = sellbill.documentid.amount * sellbill.taxid.percentage / 100.0
+        gtgt += tax_pay
+    data['sellbill'] = s
+    data['gtgt'] = gtgt
+    data['interest'] = interest
+    return data

@@ -101,4 +101,10 @@ urlpatterns = [
     # statistic
     path('taxstatisticbybranch', TaxStatisticByBranch.as_view(), name = "taxstatisticbybranch"),
     path('salarystatisticbybranch', SalaryStatisticByBranch.as_view(), name = "salarystatisticbybranch"),
+    path('statisticinoutcomebybranch', StatisticInOutcomeByBranch.as_view(), name = "StatisticInOutcomeByBranch"),
+    path('salarystatistic', SalaryStatistic.as_view(), name = "SalaryStatistic"),
+    path('StatisticInOutcome', StatisticInOutcome.as_view(), name = "StatisticInOutcome"),
+    path('InvestmentStaistic', InvestmentStaistic.as_view(), name = "InvestmentStaistic"),
+    path('LendStatistic', LendStatistic.as_view(), name = "LendStatistic"),
+    path('LoanStatistic', LoanStatistic.as_view(), name = "LoanStatistic"),
 ]

@@ -370,7 +370,6 @@ class AddBuyBill(APIView):
     def post(self, request, format = None):
         data = request.data
         user = Accountant.objects.get(userid=data['userid'])
-        branch = Branch.objects.get(id = data['branchid'])
 
         list_product = data['list_product']
         number_product = data['number_product']
@@ -391,7 +390,7 @@ class AddBuyBill(APIView):
         doc.save()
 
         bill = BuyBill()
-        bill.branchid = branch
+        bill.branchid = user.branchid
         bill.documentid = doc
         bill.payment = data['payment']
         bill.save()
@@ -1052,19 +1051,7 @@ class SalaryStatisticByBranch(APIView):
         if Manager.objects.filter(userid__id = userid).count() == 0:
             return json_format(code = 400, message = "You do not have right to access")
 
-        return_list = dict()
-        employee_in_branchs = Employee.objects.filter(departmentid__branchid__id = branchid)
-        for employee in employee_in_branchs:
-            time_now = datetime.datetime.now()
-            y, m = time_now.year, time_now.month
-            for i in range(1, m+1):
-                sum = 0
-                salaries = getSalaryTable("%.2d/%.4d" % (i, y))
-                for salary in salaries:
-                    if salary['employeeid']['employee_id'] == employee.id:
-                        total = salary['employeeid']['employee_salary'] * salary['employeeid']['employee_coef'] - salary['fine'] + salary['reward']
-                        sum += total
-                return_list["%.2d/%.4d" % (i, y)] = sum
+        return_list = salaryStatisticByBranch(branchid)
 
         return json_format(code = 200, message = "Success", data = return_list)
 
@@ -1169,23 +1156,116 @@ class TaxStatisticByBranch(APIView):
         if Manager.objects.filter(userid__id = userid).count() == 0:
             return json_format(code = 400, message = "You do not have right to access")
         tax = Tax.objects.get(id=taxid)
+        return_list = dict()
+        return_list["tax"] = getTax(tax.id)
         if "TNCN" in tax.taxtype:
-            return_list = dict()
-            employee_in_branchs = Employee.objects.filter(departmentid__branchid__id = branchid)
-            for employee in employee_in_branchs:
-                time_now = datetime.datetime.now()
-                y, m = time_now.year, time_now.month
-                for i in range(1, m+1):
-                    sum = 0
-                    salaries = getSalaryTable("%.2d/%.4d" % (i, y))
-                    for salary in salaries:
-                        if salary['employeeid']['employee_id'] == employee.id:
-                            total = salary['employeeid']['employee_salary'] * salary['employeeid']['employee_coef'] - salary['fine'] + salary['reward']
-                            tax_pay = total * float(tax.percentage) / 100.0
-                            sum += tax_pay
-                    return_list["%.2d/%.4d" % (i, y)] = sum
+            time_now = datetime.datetime.now()
+            y, m = time_now.year, time_now.month
+            for i in range(1, m+1):
+                sum = 0
+                salaries = Salary.objects.filter(employeeid__departmentid__branchid__id = branchid, salarytableid__startdate__year = y, salarytableid__startdate__month = i,
+                                                employeeid__taxid__id = tax.id)
+                for salary in salaries:
+                    total = salary.employeeid.salarydefault * salary.employeeid.coef - salary.fine + salary.reward
+                    tax_pay = total * float(tax.percentage) / 100.0
+                    sum += tax_pay
+                return_list["%.2d/%.4d" % (i, y)] = sum
+
         elif "GTGT" in tax.taxtype:
-            pass
+            time_now = datetime.datetime.now()
+            y, m = time_now.year, time_now.month
+            for i in range(1, m+1):
+                sum = 0
+                sellbills = SellBill.objects.filter(branchid__id = branchid, documentid__time__year = y, documentid__time__month = i, taxid__id = tax.id)
+                for sellbill in sellbills:
+                    tax_pay = sellbill.documentid.amount * float(tax.percentage) / 100.0
+                    sum += tax_pay
+                return_list["%.2d/%.4d" % (i, y)] = sum
+        elif "TNDN" in tax.taxtype:
+            interest = getInterestInBranch(branchid)['interest']
+            print(interest)
         return json_format(code = 200, message = "Success", data = return_list)
 
 # thông kê các loại thuế
+
+class StatisticInOutcomeByBranch(APIView):
+    def get(self, request, format=None):
+        data = request.data
+        branchid = data['branchid']
+        return_list = dict()
+        time_now = datetime.datetime.now()
+        y, m = time_now.year, time_now.month
+        for i in range(1, m+1):
+            tmp = getInterestInBranch(branchid, i, y)
+            return_list["%.2d/%.4d" % (i, y)] = tmp
+
+        return json_format(code = 200, message = "Success", data = return_list)
+
+class SalaryStatistic(APIView):
+    def get(self, request, format=None):
+        data = request.data
+        branchs = Branch.objects.all()
+        return_list = {}
+        for branch in branchs:
+            tmp = salaryStatisticByBranch(branch.id)
+            return_list[branch.id] = tmp
+        return json_format(code = 200, message = "Success", data = return_list)
+        
+class StatisticInOutcome(APIView):
+    def get(self, request, format=None):
+        data = request.data
+        branchs = Branch.objects.all()
+        return_list = {}
+        for branch in branchs:
+            tmp = dict()
+            time_now = datetime.datetime.now()
+            y, m = time_now.year, time_now.month
+            for i in range(1, m+1):
+                tmp_ = getInterestInBranch(branch.id, i, y)
+                tmp["%.2d/%.4d" % (i, y)] = tmp_
+            return_list[branch.id] = tmp
+        return json_format(code = 200, message = "Success", data = return_list)
+
+class InvestmentStaistic(APIView):
+    def get(self, request, format=None):
+        time_now = datetime.datetime.now()
+        y, m = time_now.year, time_now.month
+        return_list = {}
+        for i in range(1, m+1):
+            investments = Investmentrec.objects.filter(time__year = y, time__month = i)
+            sum = 0
+            income = 0
+            for invest in investments:
+                sum += invest.amount
+                income += invest.income
+            return_list["%.2d/%.4d" % (i, y)] = {
+                "amount" : sum,
+                "income" : income
+            }
+        return json_format(code = 200, message = "Success", data = return_list)
+
+class LendStatistic(APIView):
+    def get(self, request, format=None):
+        time_now = datetime.datetime.now()
+        y, m = time_now.year, time_now.month
+        return_list = {}
+        for i in range(1, m+1):
+            lendrecs = Lendrec.objects.filter(time__year = y, time__month = i)
+            sum = 0
+            for lendrec in lendrecs:
+                sum += lendrec.amount
+            return_list["%.2d/%.4d" % (i, y)] = sum
+        return json_format(code = 200, message = "Success", data = return_list)
+
+class LoanStatistic(APIView):
+    def get(self, request, format=None):
+        time_now = datetime.datetime.now()
+        y, m = time_now.year, time_now.month
+        return_list = {}
+        for i in range(1, m+1):
+            loanrecs = Loanrec.objects.filter(time__year = y, time__month = i)
+            sum = 0
+            for loanrec in loanrecs:
+                sum += loanrec.amount
+            return_list["%.2d/%.4d" % (i, y)] = sum
+        return json_format(code = 200, message = "Success", data = return_list)
