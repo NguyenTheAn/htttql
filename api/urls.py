@@ -63,7 +63,11 @@ urlpatterns = [
     path('add_receipt', AddReceipt.as_view(), name = "add_receipt"),
     path('get_receipt', GetReceipt.as_view(), name = "get_receipt"),
     path('summary_receipt', SummaryReceipt.as_view(), name = "summary_receipt"),
+    path('summary_receipt_by_branch', SummaryReceiptByBranch.as_view(), name = "summary_receipt_by_branch"),
 
+    # balancerec
+    path('add_balance', AddBalancerec.as_view(), name = "add_balance"),
+    path('get_balance', GetBalancerec.as_view(), name = "get_balance"),
     # lend loan
     path('addlend', AddLend.as_view(), name = "addlend"),
     path('getlend', GetLend.as_view(), name = "getlend"),
@@ -97,7 +101,9 @@ urlpatterns = [
     path('delete_log', DeleteLog.as_view(), name = "delete_log"),
     path('summary_salary', SummarySalaryTable.as_view(), name = "summary_salary"),
     path('summary_buy_product', SummaryBuyProduct.as_view(), name = "summary_buy_product"),
+    path('summary_buy_product_by_branch', SummaryBuyProductByBranch.as_view(), name = "summary_buy_product_by_branch"),
     path('summary_sell_product', SummarySellProduct.as_view(), name = "summary_sell_product"),
+    path('summary_sell_product_by_branch', SummarySellProductByBranch.as_view(), name = "summary_sell_product_by_branch"),
     # statistic
     path('taxstatisticbybranch', TaxStatisticByBranch.as_view(), name = "taxstatisticbybranch"),
     path('salarystatisticbybranch', SalaryStatisticByBranch.as_view(), name = "salarystatisticbybranch"),
