@@ -915,12 +915,7 @@ class AddSalary(APIView):
 class GetSalaryByEmployee(APIView):
     def get(self, request, format=None):
         data = request.data
-        salaries = [{'salary_id': salary.id,
-                   'employeeid': getEmployee(salary.employeeid.id),
-                   'salarytableid': salary.salarytableid.id,
-                   'fine': salary.fine,
-                   'reward': salary.reward} for salary in Salary.objects.filter(employeeid__id=data['employeeid'])]
-
+        salaries = getSalaryByEmployee(data['employeeid'])
         return json_format(code = 200, message = "Success", data = salaries)
 
 class GetSalary(APIView):
@@ -938,24 +933,7 @@ class GetSalaryTable(APIView):
     def get(self, request, format=None):
         data = request.data
 
-        m, y = [int(i) for i in data['salary_table'].split("/")]
-        days = ['{:04d}-{:02d}-{:02d}'.format(y, m, d) for d in range(1, monthrange(y, m)[1] + 1)]
-        start_date = datetime.date(*(int(s) for s in days[0].split('-')))
-        end_date = datetime.date(*(int(s) for s in days[-1].split('-')))
-        
-        
-        salary_tables = [salary_table for salary_table in Salarytable.objects.all()]
-        salary_table_id = None
-        for salary_table in salary_tables:
-            if (start_date == salary_table.startdate) and (end_date == salary_table.enddate):
-                salary_table_id = salary_table.id
-                break
-
-        salaries = [{'salary_id': salary.id,
-                   'employeeid': getEmployee(salary.employeeid.id),
-                   'salarytableid': salary.salarytableid.id,
-                   'fine': salary.fine,
-                   'reward': salary.reward} for salary in Salary.objects.filter(salarytableid=salary_table_id)]
+        salaries = getSalaryTable(data['salary_table'])
 
         return json_format(code = 200, message = "Success", data = salaries)
 
@@ -1065,6 +1043,31 @@ class AddLog(APIView):
         log.save()
         return json_format(code = 200, message = "Success")
 
+class SalaryStatisticByBranch(APIView):
+    def get(self, request, format=None):
+        data = request.data
+        branchid = data['branchid']
+        userid = data['userid']
+
+        if Manager.objects.filter(userid__id = userid).count() == 0:
+            return json_format(code = 400, message = "You do not have right to access")
+
+        return_list = dict()
+        employee_in_branchs = Employee.objects.filter(departmentid__branchid__id = branchid)
+        for employee in employee_in_branchs:
+            time_now = datetime.datetime.now()
+            y, m = time_now.year, time_now.month
+            for i in range(1, m+1):
+                sum = 0
+                salaries = getSalaryTable("%.2d/%.4d" % (i, y))
+                for salary in salaries:
+                    if salary['employeeid']['employee_id'] == employee.id:
+                        total = salary['employeeid']['employee_salary'] * salary['employeeid']['employee_coef'] - salary['fine'] + salary['reward']
+                        sum += total
+                return_list["%.2d/%.4d" % (i, y)] = sum
+
+        return json_format(code = 200, message = "Success", data = return_list)
+
 
 class TaxStatisticByBranch(APIView):
     def get(self, request, format=None):
@@ -1074,12 +1077,24 @@ class TaxStatisticByBranch(APIView):
         taxid = data['taxid']
         if Manager.objects.filter(userid__id = userid).count() == 0:
             return json_format(code = 400, message = "You do not have right to access")
-        branch = Branch.objects.get(id = branchid)
         tax = Tax.objects.get(id=taxid)
         if "TNCN" in tax.taxtype:
-            time_now = datetime.datetime.now()
-            print(time_now.month)
-
-        return json_format(code = 200, message = "Success")
+            return_list = dict()
+            employee_in_branchs = Employee.objects.filter(departmentid__branchid__id = branchid)
+            for employee in employee_in_branchs:
+                time_now = datetime.datetime.now()
+                y, m = time_now.year, time_now.month
+                for i in range(1, m+1):
+                    sum = 0
+                    salaries = getSalaryTable("%.2d/%.4d" % (i, y))
+                    for salary in salaries:
+                        if salary['employeeid']['employee_id'] == employee.id:
+                            total = salary['employeeid']['employee_salary'] * salary['employeeid']['employee_coef'] - salary['fine'] + salary['reward']
+                            tax_pay = total * float(tax.percentage) / 100.0
+                            sum += tax_pay
+                    return_list["%.2d/%.4d" % (i, y)] = sum
+        elif "GTGT" in tax.taxtype:
+            pass
+        return json_format(code = 200, message = "Success", data = return_list)
 
 # thông kê các loại thuế

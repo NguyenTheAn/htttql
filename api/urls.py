@@ -93,4 +93,5 @@ urlpatterns = [
 
     # statistic
     path('taxstatisticbybranch', TaxStatisticByBranch.as_view(), name = "taxstatisticbybranch"),
+    path('salarystatisticbybranch', SalaryStatisticByBranch.as_view(), name = "salarystatisticbybranch"),
 ]

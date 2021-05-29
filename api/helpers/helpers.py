@@ -2,6 +2,7 @@ import random
 from ..models import *
 import datetime
 import numpy as np
+from calendar import monthrange
 
 def getProduct(productid = None):
     products = [product for product in Product.objects.all()]
@@ -239,3 +240,36 @@ def getLoanPaying(loanpayingid = None):
             'payment' : loanpaying.payment
         }
     return loanpayings
+
+def getSalaryTable(table_date):
+
+    m, y = [int(i) for i in table_date.split("/")]
+    days = ['{:04d}-{:02d}-{:02d}'.format(y, m, d) for d in range(1, monthrange(y, m)[1] + 1)]
+    start_date = datetime.date(*(int(s) for s in days[0].split('-')))
+    end_date = datetime.date(*(int(s) for s in days[-1].split('-')))
+    
+    salary_tables = [salary_table for salary_table in Salarytable.objects.all()]
+    salary_table_id = None
+    for salary_table in salary_tables:
+        if (start_date == salary_table.startdate) and (end_date == salary_table.enddate):
+            salary_table_id = salary_table.id
+            break
+
+    salaries = [{'salary_id': salary.id,
+                'employeeid': getEmployee(salary.employeeid.id),
+                'salarytableid': salary.salarytableid.id,
+                'fine': salary.fine,
+                'reward': salary.reward} for salary in Salary.objects.filter(salarytableid=salary_table_id)]
+
+    return salaries
+
+
+def getSalaryByEmployee(employeeid):
+    salaries = [{'salary_id': salary.id,
+                'employeeid': getEmployee(salary.employeeid.id),
+                'salarytableid': salary.salarytableid.id,
+                'fine': salary.fine,
+                'reward': salary.reward} for salary in Salary.objects.filter(employeeid__id=employeeid)]
+
+    return salaries
+    
