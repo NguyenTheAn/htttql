@@ -158,6 +158,18 @@ def getTax(taxid):
 
     return taxes
 
+def getReceipt(documentid = None):
+    if documentid is not None:
+        receipt = Receipt.objects.get(documentid__id=documentid)
+        receipts = {'receipttype': receipt.receipttype,
+                   'desc': receipt.desc,
+                   'documentid': receipt.documentid.id}
+    else:
+        receipts = [{'receipttype': receipt.receipttype,
+                   'desc': receipt.desc,
+                   'documentid': receipt.documentid.id} for receipt in Receipt.objects.all()]
+
+    return receipts
 def getLend(lendid = None):
     lendrecs = [lendrec for lendrec in Lendrec.objects.all()]
     redata = []
