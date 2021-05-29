@@ -160,6 +160,22 @@ def getReceipt(documentid = None):
                    'documentid': receipt.documentid.id} for receipt in Receipt.objects.all()]
 
     return receipts
+
+def getBalancerec(balanceid = None):
+    if balanceid is not None:
+        balance = Balancerec.objects.get(id=balanceid)
+        balances = {'id': balance.id,
+                   'accountantuserid': balance.accountantuserid.userid.id,
+                   'content': balance.content,
+                   'amount': balance.amount}
+    else:
+        balances = [{'id': balance.id,
+                   'accountantuserid': balance.accountantuserid.userid.id,
+                   'content': balance.content,
+                   'amount': balance.amount} for balance in Balancerec.objects.all()]
+
+    return balances
+
 def getLend(lendid = None):
     lendrecs = [lendrec for lendrec in Lendrec.objects.all()]
     redata = []
@@ -242,3 +258,4 @@ def getLoanPaying(loanpayingid = None):
             'payment' : loanpaying.payment
         }
     return loanpayings
+

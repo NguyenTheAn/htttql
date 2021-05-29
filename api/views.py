@@ -864,6 +864,7 @@ class AddSalary(APIView):
         start_date = datetime.date(*(int(s) for s in days[0].split('-')))
         end_date = datetime.date(*(int(s) for s in days[-1].split('-')))
         total = employee.salarydefault * employee.coef - salary.fine + salary.reward
+        total *= ((1 - employee.taxid.percentage/100))
         salary_tables = [salary_table for salary_table in Salarytable.objects.all()]
         salary_tables_id = [salary_table.id for salary_table in salary_tables]
         exist_salary_table = False
@@ -1078,6 +1079,27 @@ class SummaryBuyProduct(APIView):
 
         return json_format(code = 200, message = "Success", data = return_data)
 
+class SummaryBuyProductByBranch(APIView):
+    def get(self, request, format=None):
+        data = request.data
+        products = [product for product in Product.objects.filter(branchid__id=data['branchid'])]
+        return_data = {}
+
+        for product in products:
+            product_buy_bills = ProductBuyBill.objects.filter(productid=product.id)
+            month_bills = {}
+            for bill in product_buy_bills:
+                document = bill.buybilldocumentid.documentid
+                time = document.time.strftime("%m/%Y")
+                if time in month_bills.keys():
+                    month_bills[time] += document.amount * product.inprice
+                else:
+                    month_bills[time] = document.amount * product.inprice
+            return_data[product.id] = month_bills
+
+
+        return json_format(code = 200, message = "Success", data = return_data)
+
 class SummarySellProduct(APIView):
     def get(self, request, format=None):
         data = request.data
@@ -1090,7 +1112,6 @@ class SummarySellProduct(APIView):
             for bill in product_sell_bills:
                 document = bill.sellbilldocumentid.documentid
                 time = document.time.strftime("%m/%Y")
-                print(type(document.amount), type(product['outprice']))
                 if time in month_bills.keys():
                     month_bills[time] += document.amount * product['outprice']
                 else:
@@ -1100,15 +1121,45 @@ class SummarySellProduct(APIView):
 
         return json_format(code = 200, message = "Success", data = return_data)
 
+class SummarySellProductByBranch(APIView):
+    def get(self, request, format=None):
+        data = request.data
+        products = Product.objects.filter(branchid__id=data['branchid'])
+        return_data = {}
+
+        for product in products:
+            product_sell_bills = ProductSellBill.objects.filter(productid=product.id)
+            month_bills = {}
+            for bill in product_sell_bills:
+                document = bill.sellbilldocumentid.documentid
+                time = document.time.strftime("%m/%Y")
+                if time in month_bills.keys():
+                    month_bills[time] += document.amount * product.outprice
+                else:
+                    month_bills[time] = document.amount * product.outprice
+            return_data[product.id] = month_bills
+
+
+        return json_format(code = 200, message = "Success", data = return_data)
+
 class AddReceipt(APIView):
     def post(self, request, format=None):
         data = request.data
+        user = Accountant.objects.get(userid__id=data['userid'])
         receipt = Receipt()
 
         receipt.receipttype = data['receipttype']
         receipt.desc = data['desc']
 
-        document = Document.objects.get(id=data['documentid'])
+        document = Document()
+        document.accountantuserid = user    
+        document.id = randomDigits(8, len(Document.objects.all()))
+        document.type = "receipt"
+        document.time = datetime.datetime.now()
+        document.name = data["name"]
+        document.content = data['content']
+        document.amount = data['amount']
+        document.save()
 
         receipt.documentid = document
         receipt.save()
@@ -1127,17 +1178,61 @@ class GetReceipt(APIView):
         return json_format(code = 200, message = "Success", data=receipts)
 
 
+# class SummaryReceipt(APIView):
+#     def get(self, request, format=None):
+#         data = request.data
+#         receipts = [receipt for receipt in Receipt.objects.filter(receipttype=data['receipttype'])]
+#         total = 0
+#         for receipt in receipts:
+#             total += receipt.documentid.amount
+#         return_data = {data['receipttype']: total}
+
+#         return json_format(code = 200, message = "Success", data = return_data)
+# class ProductBuyStatistic(APIView):
+
 class SummaryReceipt(APIView):
     def get(self, request, format=None):
         data = request.data
-        receipts = [receipt for receipt in Receipt.objects.filter(receipttype=data['receipttype'])]
-        total = 0
-        for receipt in receipts:
-            total += receipt.documentid.amount
-        return_data = {data['receipttype']: total}
+        receipts = getReceipt()
+        receipt_types = list(set([receipt['receipttype'] for receipt in receipts]))
+        return_data = {}
+
+        for receipttype in receipt_types:
+            receipts_per_type = [receipt for receipt in Receipt.objects.filter(receipttype=receipttype)]
+            month_receipt = {}
+            for receipt in receipts_per_type:
+                document = receipt.documentid
+                time = document.time.strftime("%m/%Y")
+                if time in month_receipt.keys():
+                    month_receipt[time] += document.amount
+                else:
+                    month_receipt[time] = document.amount
+            return_data[receipttype] = month_receipt
+
 
         return json_format(code = 200, message = "Success", data = return_data)
-# class ProductBuyStatistic(APIView):
+
+class SummaryReceiptByBranch(APIView):
+    def get(self, request, format=None):
+        data = request.data
+        receipts = getReceipt()
+        receipt_types = list(set([receipt['receipttype'] for receipt in receipts]))
+        return_data = {}
+
+        for receipttype in receipt_types:
+            receipts_per_type = [receipt for receipt in Receipt.objects.filter(receipttype=receipttype, documentid__accountantuserid__branchid=data['branchid'])]
+            month_receipt = {}
+            for receipt in receipts_per_type:
+                document = receipt.documentid
+                time = document.time.strftime("%m/%Y")
+                if time in month_receipt.keys():
+                    month_receipt[time] += document.amount
+                else:
+                    month_receipt[time] = document.amount
+            return_data[receipttype] = month_receipt
+
+
+        return json_format(code = 200, message = "Success", data = return_data)
 
 class TaxStatisticByBranch(APIView):
     def get(self, request, format=None):
@@ -1155,3 +1250,39 @@ class TaxStatisticByBranch(APIView):
         return json_format(code = 200, message = "Success")
 
 # thông kê các loại thuế
+
+
+class AddBalancerec(APIView):
+    def post(self, request, format=None):
+        data = request.data
+        balances_id = [int(balance.id) for balance in Balancerec.objects.all()]
+
+        balance = Balancerec()
+        if len(balances_id) != 0:
+            index = max(balances_id) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        
+        balance.id = id
+        
+        accountant = Accountant.objects.get(userid__id=data['accountantuserid'])
+        balance.accountantuserid = accountant
+        balance.content = data['content']
+
+        balance.amount = data['amount']
+        
+        balance.save()
+
+        return json_format(code = 200, message = "Success")
+
+class GetBalancerec(APIView):
+    def get(self, request, format=None):
+        data = request.data
+        if 'balanceid' in data.keys():
+            balanceid = data['balanceid']
+        else:
+            balanceid = None
+        balances = getBalancerec(balanceid)
+
+        return json_format(code = 200, message = "Success", data=balances)
