@@ -1419,12 +1419,13 @@ class TaxStatistic(APIView):
 class AllTaxStatistic(APIView):
     def post(self, request, format=None):
         data = request.data
-        returndict = None
+        returndict = dict()
         for branch in Branch.objects.all():
             tmp = getAllTaxByBranch(branch.id)
-            if returndict is None:
-                returndict = tmp
-            else:
-                for k in returndict.keys():
-                    returndict[k] += tmp[k]
+            for k in tmp.keys():
+                if "/" in k:
+                    if k not in returndict.keys():
+                        returndict[k] = tmp[k]
+                    else:
+                        returndict[k] += tmp[k]
         return json_format(code = 200, message = "Success", data=returndict)

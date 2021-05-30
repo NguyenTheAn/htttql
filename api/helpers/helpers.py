@@ -475,19 +475,23 @@ def getAllTaxByBranch(branchid):
     y, m = time_now.year, time_now.month
     for i in range(1, m+1):
         total = 0
+        max = -1
+        min = 99999
+        mintype = None
+        maxtype = None
         for tax in taxs:
             if "TNCN" in tax.taxtype:
                 sum = 0
                 salaries = Salary.objects.filter(employeeid__departmentid__branchid__id = branchid, salarytableid__startdate__year = y, salarytableid__startdate__month = i,
                                                 employeeid__taxid__id = tax.id)
                 for salary in salaries:
-                    total = computeSalary(salary.employeeid.salarydefault,
+                    total_ = computeSalary(salary.employeeid.salarydefault,
                                         salary.workingday,
                                         WorkingDayPerMonth,
                                         salary.fine,
                                         salary.reward,
                                         salary.employeeid.taxid.percentage/100)
-                    tax_pay = total * float(tax.percentage) / 100.0
+                    tax_pay = total_ * float(tax.percentage) / 100.0
                     sum += tax_pay
                 total += sum
 
@@ -501,11 +505,23 @@ def getAllTaxByBranch(branchid):
             if "TNDN" in tax.taxtype:
                 interest = getInterestInBranch(branchid, i, y)['interest']
                 if interest > 0:
-                    tax_pay = interest * float(tax.percentage) / 100.0
+                    sum = interest * float(tax.percentage) / 100.0
                 else:
-                    tax_pay = 0
-                total += tax_pay
+                    sum = 0
+                total += sum
+            
+            if max < sum:
+                max = sum
+                maxtype = tax.taxtype
+            if min > sum:
+                min = sum
+                mintype = tax.taxtype
+
         return_list["%.2d/%.4d" % (i, y)] = total
+    return_list['max'] = {'type' : maxtype,
+                        'value' : max}
+    return_list['min'] = {'type' : mintype,
+                        'value' : min}
     return return_list
 
 def computeSalary(salaryDefault, workingDay, workingDayPerMonth, fine, reward, tax):
