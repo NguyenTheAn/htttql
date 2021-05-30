@@ -356,6 +356,10 @@ def salaryStatisticByBranch(branchid):
     return_list = dict()
     time_now = datetime.datetime.now()
     y, m = time_now.year, time_now.month
+    max = -1
+    min = 99999
+    mintype = None
+    maxtype = None
     for i in range(1, m+1):
         sum = 0
         salaries = Salary.objects.filter(employeeid__departmentid__branchid__id = branchid, salarytableid__startdate__year = y, salarytableid__startdate__month = i)
@@ -368,6 +372,17 @@ def salaryStatisticByBranch(branchid):
                                         salary.employeeid.taxid.percentage/100)
             sum += total
         return_list["%.2d/%.4d" % (i, y)] = sum
+        if max < sum:
+            max = sum
+            maxtype = "%.2d/%.4d" % (i, y)
+        if min > sum:
+            min = sum
+            mintype = "%.2d/%.4d" % (i, y)
+            
+    return_list['max'] = {'type' : maxtype,
+                        'value' : max}
+    return_list['min'] = {'type' : mintype,
+                        'value' : min}
     return return_list
 
 def getInterestInBranch(branchid, month, year):
@@ -428,6 +443,10 @@ def getTaxStatisticByBranch(taxid, branchid):
     tax = Tax.objects.get(id=taxid)
     return_list = dict()
     return_list["tax"] = getTax(tax.id)
+    max = -1
+    min = 99999
+    mintype = None
+    maxtype = None
     if "TNCN" in tax.taxtype:
         time_now = datetime.datetime.now()
         y, m = time_now.year, time_now.month
@@ -462,10 +481,21 @@ def getTaxStatisticByBranch(taxid, branchid):
         for i in range(1, m+1):
             interest = getInterestInBranch(branchid, i, y)['interest']
             if interest > 0:
-                tax_pay = interest * float(tax.percentage) / 100.0
+                sum = interest * float(tax.percentage) / 100.0
             else:
-                tax_pay = 0
-            return_list["%.2d/%.4d" % (i, y)] = tax_pay
+                sum = 0
+            return_list["%.2d/%.4d" % (i, y)] = sum
+    if max < sum:
+        max = sum
+        maxtype = tax.taxtype
+    if min > sum:
+        min = sum
+        mintype = tax.taxtype
+        
+    return_list['max'] = {'type' : maxtype,
+                        'value' : max}
+    return_list['min'] = {'type' : mintype,
+                        'value' : min}
     return return_list
 
 def getAllTaxByBranch(branchid):
@@ -473,12 +503,12 @@ def getAllTaxByBranch(branchid):
     return_list = dict()
     time_now = datetime.datetime.now()
     y, m = time_now.year, time_now.month
+    max = -1
+    min = 99999
+    mintype = None
+    maxtype = None
     for i in range(1, m+1):
         total = 0
-        max = -1
-        min = 99999
-        mintype = None
-        maxtype = None
         for tax in taxs:
             if "TNCN" in tax.taxtype:
                 sum = 0
@@ -509,13 +539,12 @@ def getAllTaxByBranch(branchid):
                 else:
                     sum = 0
                 total += sum
-            
-            if max < sum:
-                max = sum
-                maxtype = tax.taxtype
-            if min > sum:
-                min = sum
-                mintype = tax.taxtype
+        if max < total:
+            max = total
+            maxtype = "%.2d/%.4d" % (i, y)
+        if min > total:
+            min = total
+            mintype = "%.2d/%.4d" % (i, y)
 
         return_list["%.2d/%.4d" % (i, y)] = total
     return_list['max'] = {'type' : maxtype,

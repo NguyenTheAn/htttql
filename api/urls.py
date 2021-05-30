@@ -68,6 +68,11 @@ urlpatterns = [
     # balancerec
     path('add_balance', AddBalancerec.as_view(), name = "add_balance"),
     path('get_balance', GetBalancerec.as_view(), name = "get_balance"),
+
+    #investment
+    path('AddInvestment', AddInvestment.as_view(), name = "AddInvestment"),
+    path('GetInvestment', GetInvestment.as_view(), name = "GetInvestment"),
+    path('EditInvestment', EditInvestment.as_view(), name = "EditInvestment"),
     # lend loan
     path('addlend', AddLend.as_view(), name = "addlend"),
     path('getlend', GetLend.as_view(), name = "getlend"),
