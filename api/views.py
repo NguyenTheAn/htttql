@@ -14,8 +14,6 @@ from .helpers.helpers import *
 # thong ke thue tong
 # balance them term (int)
 
-WorkingDayPerMonth = 24
-
 def randomDigits(digits, index):
     lower = 10**(digits-1)
     return lower + index
@@ -882,7 +880,7 @@ class AddSalary(APIView):
         
         salary.fine = data['fine']
         salary.reward = data['reward']
-
+        salary.workingday = data['workingday']
         employee = Employee.objects.get(id=data['employee_id'])
         salary.employeeid = employee
 
@@ -890,8 +888,12 @@ class AddSalary(APIView):
         days = ['{:04d}-{:02d}-{:02d}'.format(y, m, d) for d in range(1, monthrange(y, m)[1] + 1)]
         start_date = datetime.date(*(int(s) for s in days[0].split('-')))
         end_date = datetime.date(*(int(s) for s in days[-1].split('-')))
-        total = employee.salarydefault * employee.coef - salary.fine + salary.reward
-        total *= ((1 - employee.taxid.percentage/100))
+        total = computeSalary(salary.employeeid.salarydefault,
+                              salary.workingday,
+                              WorkingDayPerMonth,
+                              salary.fine,
+                              salary.reward,
+                              salary.employeeid.taxid.percentage/100)
         salary_tables = [salary_table for salary_table in Salarytable.objects.all()]
         salary_tables_id = [salary_table.id for salary_table in salary_tables]
         exist_salary_table = False
@@ -928,6 +930,12 @@ class GetSalaryByEmployee(APIView):
         salaries = getSalaryByEmployee(data['employeeid'])
         return json_format(code = 200, message = "Success", data = salaries)
 
+class GetSalaryByDepartment(APIView):
+    def post(self, request, format=None):
+        data = request.data
+        salaries = getSalaryByDepartment(data['departmentid'])
+        return json_format(code = 200, message = "Success", data = salaries)
+
 class GetSalary(APIView):
     def post(self, request, format=None):
         data = request.data
@@ -958,6 +966,8 @@ class EditSalary(APIView):
             salary.fine = data['fine']
         if "reward" in data.keys():
             salary.reward = data['reward']
+        if "workingday" in data.keys():
+            salary.workingday = data['workingday']
         salary.save()
         return json_format(code = 200, message = "Success")
 
@@ -1394,6 +1404,7 @@ class AddBalancerec(APIView):
         balance.content = data['content']
 
         balance.amount = data['amount']
+        balance.term = data['term']
         
         balance.save()
 
