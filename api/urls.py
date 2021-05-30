@@ -114,4 +114,7 @@ urlpatterns = [
     path('InvestmentStaistic', InvestmentStaistic.as_view(), name = "InvestmentStaistic"),
     path('LendStatistic', LendStatistic.as_view(), name = "LendStatistic"),
     path('LoanStatistic', LoanStatistic.as_view(), name = "LoanStatistic"),
+    path('GetAllTaxStatisticByBranch', GetAllTaxStatisticByBranch.as_view(), name = "GetAllTaxStatisticByBranch"),
+    path('TaxStatistic', TaxStatistic.as_view(), name = "TaxStatistic"),
+    path('AllTaxStatistic', AllTaxStatistic.as_view(), name = "AllTaxStatistic"),
 ]

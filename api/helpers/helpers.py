@@ -4,7 +4,6 @@ import datetime
 import numpy as np
 from calendar import monthrange
 
-
 WorkingDayPerMonth = 24
 
 def getProduct(productid = None):
@@ -113,8 +112,7 @@ def getEmployee(employeeid):
                     'employee_address': employee.address,
                     'employee_sex': employee.sex,
                     'employee_exp': employee.exp,
-                    'employee_salary': employee.salarydefault,
-                    'employee_coef': employee.coef} 
+                    'employee_salary': employee.salarydefault} 
     else:
         employees = [{'employee_id': employee.id,
                     'department_id': getDepartment(employee.departmentid.id),
@@ -127,8 +125,7 @@ def getEmployee(employeeid):
                     'employee_address': employee.address,
                     'employee_sex': employee.sex,
                     'employee_exp': employee.exp,
-                    'employee_salary': employee.salarydefault,
-                    'employee_coef': employee.coef} for employee in Employee.objects.all()]
+                    'employee_salary': employee.salarydefault} for employee in Employee.objects.all()]
     return employees
 
 def getSalary(salaryid=None):
@@ -361,7 +358,12 @@ def salaryStatisticByBranch(branchid):
         sum = 0
         salaries = Salary.objects.filter(employeeid__departmentid__branchid__id = branchid, salarytableid__startdate__year = y, salarytableid__startdate__month = i)
         for salary in salaries:
-            total = salary.employeeid.salarydefault * salary.employeeid.coef - salary.fine + salary.reward
+            total = computeSalary(salary.employeeid.salarydefault,
+                                        salary.workingday,
+                                        WorkingDayPerMonth,
+                                        salary.fine,
+                                        salary.reward,
+                                        salary.employeeid.taxid.percentage/100)
             sum += total
         return_list["%.2d/%.4d" % (i, y)] = sum
     return return_list
@@ -376,7 +378,12 @@ def getInterestInBranch(branchid, month, year):
     interest = 0
     s = 0
     for salary in salaries:
-        total = (salary.employeeid.salarydefault * salary.employeeid.coef - salary.fine + salary.reward)*(1 - salary.employeeid.taxid.percentage/100)
+        total = computeSalary(salary.employeeid.salarydefault,
+                                        salary.workingday,
+                                        WorkingDayPerMonth,
+                                        salary.fine,
+                                        salary.reward,
+                                        salary.employeeid.taxid.percentage/100)
         interest -= total
         s += total
     data['salary'] = s
@@ -414,6 +421,90 @@ def getDocument(documentid):
         "time" : document.time,
     }
     return data
+
+def getTaxStatisticByBranch(taxid, branchid):
+    tax = Tax.objects.get(id=taxid)
+    return_list = dict()
+    return_list["tax"] = getTax(tax.id)
+    if "TNCN" in tax.taxtype:
+        time_now = datetime.datetime.now()
+        y, m = time_now.year, time_now.month
+        for i in range(1, m+1):
+            sum = 0
+            salaries = Salary.objects.filter(employeeid__departmentid__branchid__id = branchid, salarytableid__startdate__year = y, salarytableid__startdate__month = i,
+                                            employeeid__taxid__id = tax.id)
+            for salary in salaries:
+                total = computeSalary(salary.employeeid.salarydefault,
+                                        salary.workingday,
+                                        WorkingDayPerMonth,
+                                        salary.fine,
+                                        salary.reward,
+                                        salary.employeeid.taxid.percentage/100)
+                tax_pay = total * float(tax.percentage) / 100.0
+                sum += tax_pay
+            return_list["%.2d/%.4d" % (i, y)] = sum
+
+    if "GTGT" in tax.taxtype:
+        time_now = datetime.datetime.now()
+        y, m = time_now.year, time_now.month
+        for i in range(1, m+1):
+            sum = 0
+            sellbills = SellBill.objects.filter(branchid__id = branchid, documentid__time__year = y, documentid__time__month = i, taxid__id = tax.id)
+            for sellbill in sellbills:
+                tax_pay = sellbill.documentid.amount * float(tax.percentage) / 100.0
+                sum += tax_pay
+            return_list["%.2d/%.4d" % (i, y)] = sum
+    if "TNDN" in tax.taxtype:
+        time_now = datetime.datetime.now()
+        y, m = time_now.year, time_now.month
+        for i in range(1, m+1):
+            interest = getInterestInBranch(branchid, i, y)['interest']
+            if interest > 0:
+                tax_pay = interest * float(tax.percentage) / 100.0
+            else:
+                tax_pay = 0
+            return_list["%.2d/%.4d" % (i, y)] = tax_pay
+    return return_list
+
+def getAllTaxByBranch(branchid):
+    taxs = Tax.objects.all()
+    return_list = dict()
+    time_now = datetime.datetime.now()
+    y, m = time_now.year, time_now.month
+    for i in range(1, m+1):
+        total = 0
+        for tax in taxs:
+            if "TNCN" in tax.taxtype:
+                sum = 0
+                salaries = Salary.objects.filter(employeeid__departmentid__branchid__id = branchid, salarytableid__startdate__year = y, salarytableid__startdate__month = i,
+                                                employeeid__taxid__id = tax.id)
+                for salary in salaries:
+                    total = computeSalary(salary.employeeid.salarydefault,
+                                        salary.workingday,
+                                        WorkingDayPerMonth,
+                                        salary.fine,
+                                        salary.reward,
+                                        salary.employeeid.taxid.percentage/100)
+                    tax_pay = total * float(tax.percentage) / 100.0
+                    sum += tax_pay
+                total += sum
+
+            if "GTGT" in tax.taxtype:
+                sum = 0
+                sellbills = SellBill.objects.filter(branchid__id = branchid, documentid__time__year = y, documentid__time__month = i, taxid__id = tax.id)
+                for sellbill in sellbills:
+                    tax_pay = sellbill.documentid.amount * float(tax.percentage) / 100.0
+                    sum += tax_pay
+                total += sum
+            if "TNDN" in tax.taxtype:
+                interest = getInterestInBranch(branchid, i, y)['interest']
+                if interest > 0:
+                    tax_pay = interest * float(tax.percentage) / 100.0
+                else:
+                    tax_pay = 0
+                total += tax_pay
+        return_list["%.2d/%.4d" % (i, y)] = total
+    return return_list
 
 def computeSalary(salaryDefault, workingDay, workingDayPerMonth, fine, reward, tax):
     return (salaryDefault * workingDay / workingDayPerMonth  + reward - fine) * (1 - tax)

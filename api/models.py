@@ -7,15 +7,6 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 
-# doi gen id tu nho den lon
-
-# branch name -> phone
-# thêm admin
-# product in_out price and date time
-# LenRec thêm lãi
-# Accountant bỏ team
-# bill time dung .now
-
 class Log(models.Model):
     id = models.CharField(db_column='ID', primary_key=True, max_length=255)
     userid = models.ForeignKey('User', models.CASCADE, db_column='UserID')
@@ -102,7 +93,6 @@ class Employee(models.Model):
     sex = models.CharField(db_column='Sex', max_length=255, blank=True, null=True)  # Field name made lowercase.
     exp = models.FloatField(db_column='Exp')  # Field name made lowercase.
     salarydefault = models.FloatField(db_column='Salary', blank=True, null=True)  # Field name made lowercase.
-    coef = models.FloatField(db_column='Coef', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         db_table = 'employee'
