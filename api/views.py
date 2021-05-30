@@ -14,7 +14,6 @@ from .helpers.helpers import *
 # thong ke thue tong
 # balance them term (int)
 
-WorkingDayPerMonth = 24
 
 def randomDigits(digits, index):
     lower = 10**(digits-1)
@@ -564,6 +563,7 @@ class AddLend(APIView):
         lendrec.chiefmanageruserid = Chiefmanager.objects.get(userid__id = data['userid'])
         lendrec.desc = data['desc']
         lendrec.amount = data['amount']
+        lendrec.remaining = lendrec.amount
         lendrec.time = datetime.datetime.strptime(data['time'], "%d/%m/%Y")
         lendrec.expired = datetime.datetime.strptime(data['expired'], "%d/%m/%Y")
         lendrec.interest_rate = data['interest_rate']
@@ -609,8 +609,10 @@ class AddLendPaying(APIView):
         id = randomDigits(8, index)
         lendpaying.id = id
         lendpaying.lendrecid = lendrec
-        lendpaying.interestamount = data['interest_amount']
+        lendpaying.interestamount = lendrec.amount*lendrec.interest_rate/100
         lendpaying.payingamount = data['payingamount']
+        lendrec.remaining = lendpaying.payingamount - lendpaying.interestamount + lendrec.remaining
+        lendrec.save()
         lendpaying.time = datetime.datetime.now()
         lendpaying.payment = data['payment']
         lendpaying.save()
@@ -631,8 +633,10 @@ class AddLoanPaying(APIView):
         id = randomDigits(8, index)
         loanpaying.id = id
         loanpaying.loanrecid = loanrec
-        loanpaying.interestamount = data['interest_amount']
+        loanpaying.interestamount = loanrec.amount*loanrec.interest_rate/100
         loanpaying.payingamount = data['payingamount']
+        loanrec.remaining = loanpaying.payingamount - loanpaying.interestamount + loanrec.remaining
+        loanrec.save()
         loanpaying.time = datetime.datetime.now()
         loanpaying.payment = data['payment']
         loanpaying.save()
@@ -665,6 +669,7 @@ class AddLoan(APIView):
         loanrec.partnerid = Partner.objects.get(data['partnerid'])
         loanrec.desc = data['desc']
         loanrec.amount = data['amount']
+        loanrec.remaining = loanrec.amount
         loanrec.time = datetime.datetime.strptime(data['time'], "%d/%m/%Y")
         loanrec.expired = datetime.datetime.strptime(data['expired'], "%d/%m/%Y")
         loanrec.interest_rate = data['interest_rate']
@@ -808,7 +813,6 @@ class AddEmployee(APIView):
         employee.sex = data['employee_sex']
         employee.exp = data['employee_exp']
         employee.salarydefault = data['employee_salary']
-        employee.coef = data['employee_coef']
 
         employee.save()
         department.save()
@@ -882,7 +886,7 @@ class AddSalary(APIView):
         
         salary.fine = data['fine']
         salary.reward = data['reward']
-
+        salary.workingday = data['workingday']
         employee = Employee.objects.get(id=data['employee_id'])
         salary.employeeid = employee
 
@@ -890,8 +894,12 @@ class AddSalary(APIView):
         days = ['{:04d}-{:02d}-{:02d}'.format(y, m, d) for d in range(1, monthrange(y, m)[1] + 1)]
         start_date = datetime.date(*(int(s) for s in days[0].split('-')))
         end_date = datetime.date(*(int(s) for s in days[-1].split('-')))
-        total = employee.salarydefault * employee.coef - salary.fine + salary.reward
-        total *= ((1 - employee.taxid.percentage/100))
+        total = computeSalary(salary.employeeid.salarydefault,
+                              salary.workingday,
+                              WorkingDayPerMonth,
+                              salary.fine,
+                              salary.reward,
+                              salary.employeeid.taxid.percentage/100)
         salary_tables = [salary_table for salary_table in Salarytable.objects.all()]
         salary_tables_id = [salary_table.id for salary_table in salary_tables]
         exist_salary_table = False
@@ -1256,39 +1264,10 @@ class TaxStatisticByBranch(APIView):
     def post(self, request, format=None):
         data = request.data
         branchid = data['branchid']
-        userid = data['userid']
+        if "taxid" not in data.keys():
+            taxid = None
         taxid = data['taxid']
-        if Manager.objects.filter(userid__id = userid).count() == 0:
-            return json_format(code = 400, message = "You do not have right to access")
-        tax = Tax.objects.get(id=taxid)
-        return_list = dict()
-        return_list["tax"] = getTax(tax.id)
-        if "TNCN" in tax.taxtype:
-            time_now = datetime.datetime.now()
-            y, m = time_now.year, time_now.month
-            for i in range(1, m+1):
-                sum = 0
-                salaries = Salary.objects.filter(employeeid__departmentid__branchid__id = branchid, salarytableid__startdate__year = y, salarytableid__startdate__month = i,
-                                                employeeid__taxid__id = tax.id)
-                for salary in salaries:
-                    total = salary.employeeid.salarydefault * salary.employeeid.coef - salary.fine + salary.reward
-                    tax_pay = total * float(tax.percentage) / 100.0
-                    sum += tax_pay
-                return_list["%.2d/%.4d" % (i, y)] = sum
-
-        elif "GTGT" in tax.taxtype:
-            time_now = datetime.datetime.now()
-            y, m = time_now.year, time_now.month
-            for i in range(1, m+1):
-                sum = 0
-                sellbills = SellBill.objects.filter(branchid__id = branchid, documentid__time__year = y, documentid__time__month = i, taxid__id = tax.id)
-                for sellbill in sellbills:
-                    tax_pay = sellbill.documentid.amount * float(tax.percentage) / 100.0
-                    sum += tax_pay
-                return_list["%.2d/%.4d" % (i, y)] = sum
-        elif "TNDN" in tax.taxtype:
-            interest = getInterestInBranch(branchid)['interest']
-            print(interest)
+        return_list = getTaxStatisticByBranch(taxid, branchid)
         return json_format(code = 200, message = "Success", data = return_list)
 
 # thông kê các loại thuế
@@ -1409,3 +1388,37 @@ class GetBalancerec(APIView):
         balances = getBalancerec(balanceid)
 
         return json_format(code = 200, message = "Success", data=balances)
+
+class GetAllTaxStatisticByBranch(APIView):
+    def post(self, request, format=None):
+        data = request.data
+        branchid = data['branchid']
+        returndict = getAllTaxByBranch(branchid)
+        return json_format(code = 200, message = "Success", data=returndict)
+
+class TaxStatistic(APIView):
+    def post(self, request, format=None):
+        data = request.data
+        taxid = data['taxid']
+        returndict = None
+        for branch in Branch.objects.all():
+            tmp = getTaxStatisticByBranch(taxid, branch.id)
+            if returndict is None:
+                returndict = tmp
+            else:
+                for k in returndict.keys():
+                    returndict[k] += tmp[k]
+        return json_format(code = 200, message = "Success", data=returndict)
+
+class AllTaxStatistic(APIView):
+    def post(self, request, format=None):
+        data = request.data
+        returndict = None
+        for branch in Branch.objects.all():
+            tmp = getAllTaxByBranch(branch.id)
+            if returndict is None:
+                returndict = tmp
+            else:
+                for k in returndict.keys():
+                    returndict[k] += tmp[k]
+        return json_format(code = 200, message = "Success", data=returndict)
