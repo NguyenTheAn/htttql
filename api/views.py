@@ -1105,7 +1105,7 @@ class SummaryBuyProduct(APIView):
                     month_bills[time] += document.amount * product['inprice']
                 else:
                     month_bills[time] = document.amount * product['inprice']
-            return_data[product['product_id']] = month_bills
+            return_data[product['product_id']] = [month_bills, getProduct(product['product_id'])]
 
 
         return json_format(code = 200, message = "Success", data = return_data)
@@ -1126,7 +1126,7 @@ class SummaryBuyProductByBranch(APIView):
                     month_bills[time] += document.amount * product.inprice
                 else:
                     month_bills[time] = document.amount * product.inprice
-            return_data[product.id] = month_bills
+            return_data[product.id] = [month_bills, getProduct(product.id)]
 
 
         return json_format(code = 200, message = "Success", data = return_data)
@@ -1147,7 +1147,7 @@ class SummarySellProduct(APIView):
                     month_bills[time] += document.amount * product['outprice']
                 else:
                     month_bills[time] = document.amount * product['outprice']
-            return_data[product['product_id']] = month_bills
+            return_data[product['product_id']] = [month_bills, getProduct(product['product_id'])]
 
 
         return json_format(code = 200, message = "Success", data = return_data)
@@ -1168,7 +1168,7 @@ class SummarySellProductByBranch(APIView):
                     month_bills[time] += document.amount * product.outprice
                 else:
                     month_bills[time] = document.amount * product.outprice
-            return_data[product.id] = month_bills
+            return_data[product.id] = [month_bills, getProduct(product.id)]
 
 
         return json_format(code = 200, message = "Success", data = return_data)
