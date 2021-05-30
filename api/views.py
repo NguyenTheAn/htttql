@@ -465,12 +465,11 @@ class AddSellBill(APIView):
 
         list_product = data['list_product']
         number_product = data['number_product']
-        list_price = data['list_price']
         products = [Product.objects.get(id = productid) for productid in list_product]
 
         amount = 0
-        for price, num in zip(number_product, list_price):
-            amount += (price*num)
+        for num, product in zip(number_product, products):
+            amount += (product.outprice*num)
         
         doc = Document()
         doc.accountantuserid = user
@@ -665,7 +664,7 @@ class AddLoan(APIView):
         id = randomDigits(8, index)
         loanrec.id = id
         loanrec.chiefmanageruserid = Chiefmanager.objects.get(userid__id = data['userid'])
-        loanrec.partnerid = Partner.objects.get(data['partnerid'])
+        loanrec.partnerid = Partner.objects.get(id = data['partnerid'])
         loanrec.desc = data['desc']
         loanrec.amount = data['amount']
         loanrec.remaining = loanrec.amount
