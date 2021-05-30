@@ -40,6 +40,7 @@ class Balancerec(models.Model):
     accountantuserid = models.ForeignKey(Accountant, models.CASCADE, db_column='AccountantUserID')  # Field name made lowercase.
     content = models.CharField(db_column='Content', max_length=255, blank=True, null=True)  # Field name made lowercase.
     amount = models.FloatField(db_column='Amount')  # Field name made lowercase.
+    term = models.IntegerField(db_column='Term')
 
     class Meta:
         db_table = 'balancerec'
@@ -126,6 +127,7 @@ class Lendrec(models.Model):
     chiefmanageruserid = models.ForeignKey(Chiefmanager, models.CASCADE, db_column='ChiefManagerUserID')  # Field name made lowercase.
     desc = models.CharField(db_column='Desc', max_length=255, blank=True, null=True)  # Field name made lowercase.
     amount = models.FloatField(db_column='Amount')  # Field name made lowercase.
+    remaining = models.FloatField(db_column='RemainingAmount')
     time = models.DateField(db_column='Time', blank=True, null=True)  # Field name made lowercase.
     expired = models.DateField(db_column='expired', blank=True, null=True)
     interest_rate = models.FloatField(db_column='InterestRate', blank=True, null=True) 
@@ -146,9 +148,11 @@ class LendPaying(models.Model):
 
 class Loanrec(models.Model):
     id = models.CharField(db_column='ID', primary_key=True, max_length=255)  # Field name made lowercase.
+    partnerid = models.ForeignKey('Partner', models.CASCADE, db_column='PartnerID')  # Field name made lowercase.
     chiefmanageruserid = models.ForeignKey(Chiefmanager, models.CASCADE, db_column='ChiefManagerUserID')  # Field name made lowercase.
     desc = models.CharField(db_column='Desc', max_length=255, blank=True, null=True)  # Field name made lowercase.
     amount = models.FloatField(db_column='Amount')  # Field name made lowercase.
+    remaining = models.FloatField(db_column='RemainingAmount')
     time = models.DateField(db_column='Time', blank=True, null=True)  # Field name made lowercase.
     expired = models.DateField(db_column='expired', blank=True, null=True)
     interest_rate = models.FloatField(db_column='InterestRate', blank=True, null=True) 
@@ -247,6 +251,7 @@ class Salary(models.Model):
     salarytableid = models.ForeignKey('Salarytable', models.CASCADE, db_column='SalaryTableID')  # Field name made lowercase.
     fine = models.FloatField(db_column='Fine', blank=True, null=True)  # Field name made lowercase.
     reward = models.FloatField(db_column='Reward')  # Field name made lowercase.
+    workingday = models.IntegerField(db_column='workingday')
 
     class Meta:
         db_table = 'salary'

@@ -8,12 +8,20 @@ import numpy as np
 from calendar import monthrange
 from .helpers.helpers import *
 
+# bo he so luong, them tong tien luong luc get luong
+# them attribute day work
+# tinh so tien con lai khi tra them mot truong vao lend hoac loan
+# thong ke thue tong
+# balance them term (int)
+
+WorkingDayPerMonth = 24
+
 def randomDigits(digits, index):
     lower = 10**(digits-1)
     return lower + index
 
 class ListUsers(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         if "id" in data.keys():
             userid = data['id']
@@ -133,7 +141,7 @@ class AddPartner(APIView):
         return json_format(code = 200, message = "Success")
 
 class ListPartner(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         return_data = []
         data = request.data
         if "id" in data.keys():
@@ -168,7 +176,7 @@ class DeletePartner(APIView):
         return json_format(code = 200, message = "Success")
 
 class GetListBranch(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         if "branchid" in data.keys():
            branchid = data['id']
@@ -253,7 +261,7 @@ class AddProduct(APIView):
         return json_format(code = 200, message = "Success")
 
 class ListProduct(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         return_data = []
         data = request.data
         if "id" in data.keys():
@@ -266,7 +274,7 @@ class ListProduct(APIView):
         return json_format(code = 200, message = "Success", data = return_data)
 
 class GetProductByPartner(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         return_data = []
         data = request.data
         partnerid = data['partnerid']
@@ -310,7 +318,7 @@ class DeleteProduct(APIView):
         return json_format(code = 200, message = "Success")
 
 class GetDepartment(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         if "departmentid" in data.keys():
             departmentid = data['departmentid']
@@ -383,7 +391,8 @@ class AddBuyBill(APIView):
         doc.accountantuserid = user
         doc.id = randomDigits(8, len(Document.objects.all()))
         doc.type = "bill"
-        doc.time = datetime.datetime.now()
+        # doc.time = datetime.datetime.now()
+        doc.time = datetime.datetime.strptime(data['time'], "%d/%m/%Y")
         doc.name = data["name"]
         doc.content = data['content']
         doc.amount = amount
@@ -411,7 +420,7 @@ class AddBuyBill(APIView):
         return json_format(code = 200, message = "Success")
 
 class GetBuyBill(APIView):
-    def get(self, request, format = None):
+    def post(self, request, format = None):
         res = []
         data = request.data
         for doc in Document.objects.all():
@@ -501,7 +510,7 @@ class AddSellBill(APIView):
         return json_format(code = 200, message = "Success")
 
 class GetSellBill(APIView):
-    def get(self, request, format = None):
+    def post(self, request, format = None):
         res = []
         data = request.data
         for doc in Document.objects.all():
@@ -562,7 +571,7 @@ class AddLend(APIView):
         return json_format(code = 200, message = "Success")
 
 class GetLend(APIView):
-    def get(self, request, format = None):
+    def post(self, request, format = None):
         data = request.data
         if 'id' in data.keys():
             lendid = data['id']
@@ -630,7 +639,7 @@ class AddLoanPaying(APIView):
         return json_format(code = 200, message = "Success")
 
 class GetLendPaying(APIView):
-    def get(self, request, format = None):
+    def post(self, request, format = None):
         data = request.data
         if "id" in data.keys():
             lenpayingid = data['id']
@@ -643,7 +652,7 @@ class AddLoan(APIView):
     def post(self, request, format = None):
         data = request.data
         loanrecs = [loanrec for loanrec in Loanrec.objects.all()]
-        loanrecids = [int(loanrec.id) for loanrec in Loanrec.objects.all()]
+        loanrecids = [int(loanrec.id) for loanrec in loanrecs]
 
         loanrec = Loanrec()
         if len(loanrecids) != 0:
@@ -653,6 +662,7 @@ class AddLoan(APIView):
         id = randomDigits(8, index)
         loanrec.id = id
         loanrec.chiefmanageruserid = Chiefmanager.objects.get(userid__id = data['userid'])
+        loanrec.partnerid = Partner.objects.get(data['partnerid'])
         loanrec.desc = data['desc']
         loanrec.amount = data['amount']
         loanrec.time = datetime.datetime.strptime(data['time'], "%d/%m/%Y")
@@ -663,7 +673,7 @@ class AddLoan(APIView):
         return json_format(code = 200, message = "Success")
 
 class GetLoan(APIView):
-    def get(self, request, format = None):
+    def post(self, request, format = None):
         data = request.data
         if 'id' in data.keys():
             loanid = data['id']
@@ -673,7 +683,7 @@ class GetLoan(APIView):
         return json_format(code = 200, message = "Success", data = redata)
 
 class GetLoanPaying(APIView):
-    def get(self, request, format = None):
+    def post(self, request, format = None):
         data = request.data
         if 'id' in data.keys():
             loanpayingid = data['id']
@@ -719,7 +729,7 @@ class AddInvestment(APIView):
         return json_format(code = 200, message = "Success")
 
 class GetInvestment(APIView):
-    def get(self, request, format = None):
+    def post(self, request, format = None):
         data = request.data
         investmentrecs = [investmentrec for investmentrec in Investmentrec.objects.all()]
         redata = []
@@ -807,7 +817,7 @@ class AddEmployee(APIView):
 
 
 class GetEmployee(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         if "employee_id" in data.keys():
             employeeid = data['employee_id']
@@ -913,13 +923,13 @@ class AddSalary(APIView):
         return json_format(code = 200, message = "Success")
 
 class GetSalaryByEmployee(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         salaries = getSalaryByEmployee(data['employeeid'])
         return json_format(code = 200, message = "Success", data = salaries)
 
 class GetSalary(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         if "salaryid" in data.keys():
             salaryid = data['salaryid']
@@ -930,7 +940,7 @@ class GetSalary(APIView):
         return json_format(code = 200, message = "Success", data = salaries)
 
 class GetSalaryTable(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
 
         salaries = getSalaryTable(data['salary_table'])
@@ -977,7 +987,7 @@ class EditTax(APIView):
         return json_format(code = 200, message = "Success")
 
 class GetTax(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         if "taxid" in data.keys():
             taxid = data['taxid']
@@ -1011,7 +1021,7 @@ class EditLog(APIView):
         return json_format(code = 200, message = "Success")
 
 class GetLog(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         logs = [{'log_id': log.id,
                    'userid': getUser(log.userid.id),
                    'name': log.name,
@@ -1044,7 +1054,7 @@ class AddLog(APIView):
         return json_format(code = 200, message = "Success")
 
 class SalaryStatisticByBranch(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         branchid = data['branchid']
         userid = data['userid']
@@ -1057,7 +1067,7 @@ class SalaryStatisticByBranch(APIView):
         return json_format(code = 200, message = "Success", data = return_list)
 
 class SummarySalaryTable(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         salary_tables = [{'salary_table_id': salary_table.id,
                         'total': salary_table.total,
                         'note': salary_table.note,
@@ -1067,7 +1077,7 @@ class SummarySalaryTable(APIView):
         return json_format(code = 200, message = "Success", data = salary_tables)
 
 class SummaryBuyProduct(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         products = getProduct()
         return_data = {}
@@ -1088,7 +1098,7 @@ class SummaryBuyProduct(APIView):
         return json_format(code = 200, message = "Success", data = return_data)
 
 class SummaryBuyProductByBranch(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         products = [product for product in Product.objects.filter(branchid__id=data['branchid'])]
         return_data = {}
@@ -1109,7 +1119,7 @@ class SummaryBuyProductByBranch(APIView):
         return json_format(code = 200, message = "Success", data = return_data)
 
 class SummarySellProduct(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         products = getProduct()
         return_data = {}
@@ -1130,7 +1140,7 @@ class SummarySellProduct(APIView):
         return json_format(code = 200, message = "Success", data = return_data)
 
 class SummarySellProductByBranch(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         products = Product.objects.filter(branchid__id=data['branchid'])
         return_data = {}
@@ -1175,7 +1185,7 @@ class AddReceipt(APIView):
         return json_format(code = 200, message = "Success")
 
 class GetReceipt(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         if 'documentid' in data.keys():
             documentid = getDocument(data['documentid'])
@@ -1187,7 +1197,7 @@ class GetReceipt(APIView):
 
 
 # class SummaryReceipt(APIView):
-#     def get(self, request, format=None):
+#     def post(self, request, format=None):
 #         data = request.data
 #         receipts = [receipt for receipt in Receipt.objects.filter(receipttype=data['receipttype'])]
 #         total = 0
@@ -1199,7 +1209,7 @@ class GetReceipt(APIView):
 # class ProductBuyStatistic(APIView):
 
 class SummaryReceipt(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         receipts = getReceipt()
         receipt_types = list(set([receipt['receipttype'] for receipt in receipts]))
@@ -1221,7 +1231,7 @@ class SummaryReceipt(APIView):
         return json_format(code = 200, message = "Success", data = return_data)
 
 class SummaryReceiptByBranch(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         receipts = getReceipt()
         receipt_types = list(set([receipt['receipttype'] for receipt in receipts]))
@@ -1243,7 +1253,7 @@ class SummaryReceiptByBranch(APIView):
         return json_format(code = 200, message = "Success", data = return_data)
 
 class TaxStatisticByBranch(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         branchid = data['branchid']
         userid = data['userid']
@@ -1284,7 +1294,7 @@ class TaxStatisticByBranch(APIView):
 # thông kê các loại thuế
 
 class StatisticInOutcomeByBranch(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         branchid = data['branchid']
         return_list = dict()
@@ -1297,7 +1307,7 @@ class StatisticInOutcomeByBranch(APIView):
         return json_format(code = 200, message = "Success", data = return_list)
 
 class SalaryStatistic(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         branchs = Branch.objects.all()
         return_list = {}
@@ -1307,7 +1317,7 @@ class SalaryStatistic(APIView):
         return json_format(code = 200, message = "Success", data = return_list)
         
 class StatisticInOutcome(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         branchs = Branch.objects.all()
         return_list = {}
@@ -1322,7 +1332,7 @@ class StatisticInOutcome(APIView):
         return json_format(code = 200, message = "Success", data = return_list)
 
 class InvestmentStaistic(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         time_now = datetime.datetime.now()
         y, m = time_now.year, time_now.month
         return_list = {}
@@ -1340,7 +1350,7 @@ class InvestmentStaistic(APIView):
         return json_format(code = 200, message = "Success", data = return_list)
 
 class LendStatistic(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         time_now = datetime.datetime.now()
         y, m = time_now.year, time_now.month
         return_list = {}
@@ -1353,7 +1363,7 @@ class LendStatistic(APIView):
         return json_format(code = 200, message = "Success", data = return_list)
 
 class LoanStatistic(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         time_now = datetime.datetime.now()
         y, m = time_now.year, time_now.month
         return_list = {}
@@ -1390,7 +1400,7 @@ class AddBalancerec(APIView):
         return json_format(code = 200, message = "Success")
 
 class GetBalancerec(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         data = request.data
         if 'balanceid' in data.keys():
             balanceid = data['balanceid']

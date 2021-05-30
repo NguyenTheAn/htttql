@@ -251,6 +251,7 @@ def getLoanPaying(loanpayingid = None):
     if loanpayingid is None:
         loanpayings = [{
             'id' : loanpaying.id,
+            'partner' : getPartner(loanpaying.partnerid.id),
             'lendrec' : getLend(loanpaying.loanrecid.id),
             'interest_amount' : loanpaying.interestamount,
             'payingamount' : loanpaying.payingamount,
@@ -261,6 +262,7 @@ def getLoanPaying(loanpayingid = None):
         loanpaying = LoanPaying.objects.get(id = loanpayingid)
         loanpayings = {
             'id' : loanpaying.id,
+            'partner' : getPartner(loanpaying.partnerid.id),
             'lendrec' : getLend(loanpaying.loanrecid.id),
             'interest_amount' : loanpaying.interestamount,
             'payingamount' : loanpaying.payingamount,
