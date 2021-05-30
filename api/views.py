@@ -855,7 +855,6 @@ class EditInfoEmployee(APIView):
         employee.sex = data['employee_sex']
         employee.exp = data['employee_exp']
         employee.salarydefault = data['employee_salary']
-        employee.coef = data['employee_coef']
 
         old_department = Department.objects.get(id=employee.departmentid.id)
         old_department.numofemployees -= 1

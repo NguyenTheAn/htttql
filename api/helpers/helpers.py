@@ -112,8 +112,7 @@ def getEmployee(employeeid):
                     'employee_address': employee.address,
                     'employee_sex': employee.sex,
                     'employee_exp': employee.exp,
-                    'employee_salary': employee.salarydefault,
-                    'employee_coef': employee.coef} 
+                    'employee_salary': employee.salarydefault} 
     else:
         employees = [{'employee_id': employee.id,
                     'department_id': getDepartment(employee.departmentid.id),
@@ -126,8 +125,7 @@ def getEmployee(employeeid):
                     'employee_address': employee.address,
                     'employee_sex': employee.sex,
                     'employee_exp': employee.exp,
-                    'employee_salary': employee.salarydefault,
-                    'employee_coef': employee.coef} for employee in Employee.objects.all()]
+                    'employee_salary': employee.salarydefault} for employee in Employee.objects.all()]
     return employees
 
 def getSalary(salaryid=None):
@@ -360,7 +358,12 @@ def salaryStatisticByBranch(branchid):
         sum = 0
         salaries = Salary.objects.filter(employeeid__departmentid__branchid__id = branchid, salarytableid__startdate__year = y, salarytableid__startdate__month = i)
         for salary in salaries:
-            total = salary.employeeid.salarydefault * salary.employeeid.coef - salary.fine + salary.reward
+            total = computeSalary(salary.employeeid.salarydefault,
+                                        salary.workingday,
+                                        WorkingDayPerMonth,
+                                        salary.fine,
+                                        salary.reward,
+                                        salary.employeeid.taxid.percentage/100)
             sum += total
         return_list["%.2d/%.4d" % (i, y)] = sum
     return return_list
@@ -375,7 +378,12 @@ def getInterestInBranch(branchid, month, year):
     interest = 0
     s = 0
     for salary in salaries:
-        total = (salary.employeeid.salarydefault * salary.employeeid.coef - salary.fine + salary.reward)*(1 - salary.employeeid.taxid.percentage/100)
+        total = computeSalary(salary.employeeid.salarydefault,
+                                        salary.workingday,
+                                        WorkingDayPerMonth,
+                                        salary.fine,
+                                        salary.reward,
+                                        salary.employeeid.taxid.percentage/100)
         interest -= total
         s += total
     data['salary'] = s
@@ -426,7 +434,12 @@ def getTaxStatisticByBranch(taxid, branchid):
             salaries = Salary.objects.filter(employeeid__departmentid__branchid__id = branchid, salarytableid__startdate__year = y, salarytableid__startdate__month = i,
                                             employeeid__taxid__id = tax.id)
             for salary in salaries:
-                total = salary.employeeid.salarydefault * salary.employeeid.coef - salary.fine + salary.reward
+                total = computeSalary(salary.employeeid.salarydefault,
+                                        salary.workingday,
+                                        WorkingDayPerMonth,
+                                        salary.fine,
+                                        salary.reward,
+                                        salary.employeeid.taxid.percentage/100)
                 tax_pay = total * float(tax.percentage) / 100.0
                 sum += tax_pay
             return_list["%.2d/%.4d" % (i, y)] = sum
@@ -466,7 +479,12 @@ def getAllTaxByBranch(branchid):
                 salaries = Salary.objects.filter(employeeid__departmentid__branchid__id = branchid, salarytableid__startdate__year = y, salarytableid__startdate__month = i,
                                                 employeeid__taxid__id = tax.id)
                 for salary in salaries:
-                    total = salary.employeeid.salarydefault * salary.employeeid.coef - salary.fine + salary.reward
+                    total = computeSalary(salary.employeeid.salarydefault,
+                                        salary.workingday,
+                                        WorkingDayPerMonth,
+                                        salary.fine,
+                                        salary.reward,
+                                        salary.employeeid.taxid.percentage/100)
                     tax_pay = total * float(tax.percentage) / 100.0
                     sum += tax_pay
                 total += sum
