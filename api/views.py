@@ -423,7 +423,7 @@ class GetBuyBill(APIView):
                 continue
             product_bills = ProductBuyBill.objects.filter(buybilldocumentid__documentid__id = id)
             res_data = {
-                "documentid": bill.documentid.id,
+                "documentid": getDocument(bill.documentid.id),
                 "payment": bill.payment,
             }
             for product_bill in product_bills:
@@ -513,7 +513,7 @@ class GetSellBill(APIView):
                 continue
             product_bills = ProductSellBill.objects.filter(sellbilldocumentid__documentid__id = id)
             res_data = {
-                "documentid": bill.documentid.id,
+                "documentid": getDocument(bill.documentid.id),
                 "customer": bill.customer,
                 "cusaddress": bill.cusaddress,
                 "cusphone": bill.cusphone,
@@ -1178,7 +1178,7 @@ class GetReceipt(APIView):
     def get(self, request, format=None):
         data = request.data
         if 'documentid' in data.keys():
-            documentid = data['documentid']
+            documentid = getDocument(data['documentid'])
         else:
             documentid = None
         receipts = getReceipt(documentid)

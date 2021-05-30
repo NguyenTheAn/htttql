@@ -349,3 +349,16 @@ def getInterestInBranch(branchid, month, year):
     data['gtgt'] = gtgt
     data['interest'] = interest
     return data
+
+def getDocument(documentid):
+    document = Document.objects.get(id = documentid)
+    data = {
+        "id" : document.id,
+        "user" : getUser(document.accountantuserid.userid.id),
+        "name" : document.name,
+        "type" : document.type,
+        "content" : document.content,
+        "amount" : document.amount,
+        "time" : document.time,
+    }
+    return data
