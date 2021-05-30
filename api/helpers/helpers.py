@@ -133,18 +133,33 @@ def getEmployee(employeeid):
 def getSalary(salaryid=None):
     if salaryid is not None:
         salary = Salary.objects.get(id=salaryid)
+        total = computeSalary(salary.employeeid.salarydefault,
+                              salary.workingday,
+                              WorkingDayPerMonth,
+                              salary.fine,
+                              salary.reward,
+                              salary.employeeid.taxid.percentage/100)
         salaries = {'salary_id': salary.id,
                 'employeeid': getEmployee(salary.employeeid.id),
                 'salarytableid': salary.salarytableid.id,
                 'fine': salary.fine,
-                'reward': salary.reward}
+                'reward': salary.reward,
+                'workingday': salary.workingday,
+                'total': total}
 
     else:
         salaries = [{'salary_id': salary.id,
                 'employeeid': getEmployee(salary.employeeid.id),
                 'salarytableid': salary.salarytableid.id,
                 'fine': salary.fine,
-                'reward': salary.reward} for salary in Salary.objects.all()]
+                'reward': salary.reward,
+                'workingday': salary.workingday,
+                'total': computeSalary(salary.employeeid.salarydefault,
+                                        salary.workingday,
+                                        WorkingDayPerMonth,
+                                        salary.fine,
+                                        salary.reward,
+                                        salary.employeeid.taxid.percentage/100)} for salary in Salary.objects.all()]
     return salaries
 
 def getTax(taxid):
@@ -179,12 +194,14 @@ def getBalancerec(balanceid = None):
         balances = {'id': balance.id,
                    'accountantuserid': balance.accountantuserid.userid.id,
                    'content': balance.content,
-                   'amount': balance.amount}
+                   'amount': balance.amount,
+                   'term': balance.term}
     else:
         balances = [{'id': balance.id,
                    'accountantuserid': balance.accountantuserid.userid.id,
                    'content': balance.content,
-                   'amount': balance.amount} for balance in Balancerec.objects.all()]
+                   'amount': balance.amount,
+                   'term': balance.term} for balance in Balancerec.objects.all()]
 
     return balances
 
@@ -291,7 +308,14 @@ def getSalaryTable(table_date):
                 'employeeid': getEmployee(salary.employeeid.id),
                 'salarytableid': salary.salarytableid.id,
                 'fine': salary.fine,
-                'reward': salary.reward} for salary in Salary.objects.filter(salarytableid=salary_table_id)]
+                'reward': salary.reward,
+                'workingday': salary.workingday,
+                'total': computeSalary(salary.employeeid.salarydefault,
+                                        salary.workingday,
+                                        WorkingDayPerMonth,
+                                        salary.fine,
+                                        salary.reward,
+                                        salary.employeeid.taxid.percentage/100)} for salary in Salary.objects.filter(salarytableid=salary_table_id)]
 
     return salaries
 
@@ -301,10 +325,33 @@ def getSalaryByEmployee(employeeid):
                 'employeeid': getEmployee(salary.employeeid.id),
                 'salarytableid': salary.salarytableid.id,
                 'fine': salary.fine,
-                'reward': salary.reward} for salary in Salary.objects.filter(employeeid__id=employeeid)]
+                'reward': salary.reward,
+                'workingday': salary.workingday,
+                'total': computeSalary(salary.employeeid.salarydefault,
+                                        salary.workingday,
+                                        WorkingDayPerMonth,
+                                        salary.fine,
+                                        salary.reward,
+                                        salary.employeeid.taxid.percentage/100)} for salary in Salary.objects.filter(employeeid__id=employeeid)]
 
     return salaries
     
+def getSalaryByDepartment(departmentid):
+    salaries = [{'salary_id': salary.id,
+                'employeeid': getEmployee(salary.employeeid.id),
+                'salarytableid': salary.salarytableid.id,
+                'fine': salary.fine,
+                'reward': salary.reward,
+                'workingday': salary.workingday,
+                'total': computeSalary(salary.employeeid.salarydefault,
+                                        salary.workingday,
+                                        WorkingDayPerMonth,
+                                        salary.fine,
+                                        salary.reward,
+                                        salary.employeeid.taxid.percentage/100)} for salary in Salary.objects.filter(employeeid__departmentid__id=departmentid)]
+
+    return salaries
+
 def salaryStatisticByBranch(branchid):
     return_list = dict()
     time_now = datetime.datetime.now()

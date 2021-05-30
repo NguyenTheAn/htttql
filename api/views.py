@@ -14,7 +14,6 @@ from .helpers.helpers import *
 # thong ke thue tong
 # balance them term (int)
 
-
 def randomDigits(digits, index):
     lower = 10**(digits-1)
     return lower + index
@@ -936,6 +935,12 @@ class GetSalaryByEmployee(APIView):
         salaries = getSalaryByEmployee(data['employeeid'])
         return json_format(code = 200, message = "Success", data = salaries)
 
+class GetSalaryByDepartment(APIView):
+    def post(self, request, format=None):
+        data = request.data
+        salaries = getSalaryByDepartment(data['departmentid'])
+        return json_format(code = 200, message = "Success", data = salaries)
+
 class GetSalary(APIView):
     def post(self, request, format=None):
         data = request.data
@@ -966,6 +971,8 @@ class EditSalary(APIView):
             salary.fine = data['fine']
         if "reward" in data.keys():
             salary.reward = data['reward']
+        if "workingday" in data.keys():
+            salary.workingday = data['workingday']
         salary.save()
         return json_format(code = 200, message = "Success")
 
@@ -1373,6 +1380,7 @@ class AddBalancerec(APIView):
         balance.content = data['content']
 
         balance.amount = data['amount']
+        balance.term = data['term']
         
         balance.save()
 

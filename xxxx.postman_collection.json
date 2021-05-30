@@ -47,7 +47,7 @@
 		{
 			"name": "http://127.0.0.1:8000/api/get_branch",
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
 				"url": {
 					"raw": "http://127.0.0.1:8000/api/get_branch",
@@ -324,7 +324,7 @@
 		{
 			"name": "http://127.0.0.1:8000/api/get_employee",
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
 				"url": {
 					"raw": "http://127.0.0.1:8000/api/get_employee",
@@ -415,7 +415,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": " {\"employee_id\": \"90445637\",\n  \"salary_table\": \"08/2021\",\n  \"fine\": 206,\n  \"reward\": 800}",
+					"raw": " {\"employee_id\": \"10000000\",\n  \"salary_table\": \"06/2021\",\n  \"fine\": 206,\n  \"reward\": 800,\n  \"workingday\": 12345}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -509,11 +509,8 @@
 		},
 		{
 			"name": "http://127.0.0.1:8000/api/get_salary_table",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
@@ -1002,7 +999,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"accountantuserid\": \"10000000\",\n \"content\": \"hang ton\",\n  \"amount\": 1231231.4}",
+					"raw": "{\"accountantuserid\": \"10000000\",\n \"content\": \"hang ton\",\n  \"amount\": 1231231.4,\n  \"term\": 1234}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1115,6 +1112,38 @@
 					"path": [
 						"api",
 						"summary_receipt_by_branch"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_salary_by_department",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"departmentid\": \"10000000\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/get_salary_by_department",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"get_salary_by_department"
 					]
 				}
 			},
