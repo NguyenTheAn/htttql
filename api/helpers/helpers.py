@@ -178,11 +178,11 @@ def getReceipt(documentid = None):
         receipt = Receipt.objects.get(documentid__id=documentid)
         receipts = {'receipttype': receipt.receipttype,
                    'desc': receipt.desc,
-                   'documentid': receipt.documentid.id}
+                   'documentid': getDocument(receipt.documentid.id)}
     else:
         receipts = [{'receipttype': receipt.receipttype,
                    'desc': receipt.desc,
-                   'documentid': receipt.documentid.id} for receipt in Receipt.objects.all()]
+                   'documentid': getDocument(receipt.documentid.id)} for receipt in Receipt.objects.all()]
 
     return receipts
 
