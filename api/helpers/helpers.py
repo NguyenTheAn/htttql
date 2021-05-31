@@ -360,6 +360,7 @@ def salaryStatisticByBranch(branchid):
     min = 99999
     mintype = None
     maxtype = None
+    tmp_ = {}
     for i in range(1, m+1):
         sum = 0
         salaries = Salary.objects.filter(employeeid__departmentid__branchid__id = branchid, salarytableid__startdate__year = y, salarytableid__startdate__month = i)
@@ -371,14 +372,14 @@ def salaryStatisticByBranch(branchid):
                                         salary.reward,
                                         salary.employeeid.taxid.percentage/100)
             sum += total
-        return_list["%.2d/%.4d" % (i, y)] = sum
+        tmp_["%.2d/%.4d" % (i, y)] = sum
         if max < sum:
             max = sum
             maxtype = "%.2d/%.4d" % (i, y)
         if min > sum:
             min = sum
             mintype = "%.2d/%.4d" % (i, y)
-            
+    return_list["statistic"] = [{"date" : k, "value" : tmp_[k]} for k in tmp_.keys()]        
     return_list['max'] = {'type' : maxtype,
                         'value' : max}
     return_list['min'] = {'type' : mintype,
@@ -447,6 +448,7 @@ def getTaxStatisticByBranch(taxid, branchid):
     min = 99999
     mintype = None
     maxtype = None
+    tmp_ = {}
     if "TNCN" in tax.taxtype:
         time_now = datetime.datetime.now()
         y, m = time_now.year, time_now.month
@@ -463,7 +465,7 @@ def getTaxStatisticByBranch(taxid, branchid):
                                         salary.employeeid.taxid.percentage/100)
                 tax_pay = total * float(tax.percentage) / 100.0
                 sum += tax_pay
-            return_list["%.2d/%.4d" % (i, y)] = sum
+            tmp_["%.2d/%.4d" % (i, y)] = sum
 
     if "GTGT" in tax.taxtype:
         time_now = datetime.datetime.now()
@@ -474,7 +476,7 @@ def getTaxStatisticByBranch(taxid, branchid):
             for sellbill in sellbills:
                 tax_pay = sellbill.documentid.amount * float(tax.percentage) / 100.0
                 sum += tax_pay
-            return_list["%.2d/%.4d" % (i, y)] = sum
+            tmp_["%.2d/%.4d" % (i, y)] = sum
     if "TNDN" in tax.taxtype:
         time_now = datetime.datetime.now()
         y, m = time_now.year, time_now.month
@@ -484,7 +486,15 @@ def getTaxStatisticByBranch(taxid, branchid):
                 sum = interest * float(tax.percentage) / 100.0
             else:
                 sum = 0
-            return_list["%.2d/%.4d" % (i, y)] = sum
+            tmp_["%.2d/%.4d" % (i, y)] = sum
+    return_list["statistic"] = [{"date" : k, "value" : tmp_[k]} for k in tmp_.keys()]
+    for k in tmp_.keys():
+        if tmp_[k] > max:
+            max = tmp_[k]
+            maxtype = k
+        if tmp_[k] < min:
+            min = tmp_[k]
+            mintype = k
     if max < sum:
         max = sum
         maxtype = tax.taxtype
@@ -507,6 +517,7 @@ def getAllTaxByBranch(branchid):
     min = 99999
     mintype = None
     maxtype = None
+    tmp_ = {}
     for i in range(1, m+1):
         total = 0
         for tax in taxs:
@@ -546,7 +557,8 @@ def getAllTaxByBranch(branchid):
             min = total
             mintype = "%.2d/%.4d" % (i, y)
 
-        return_list["%.2d/%.4d" % (i, y)] = total
+        tmp_["%.2d/%.4d" % (i, y)] = total
+    return_list["statistic"] = [{"date" : k, "value" : tmp_[k]} for k in tmp_.keys()]
     return_list['max'] = {'type' : maxtype,
                         'value' : max}
     return_list['min'] = {'type' : mintype,

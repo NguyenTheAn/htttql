@@ -1278,8 +1278,6 @@ class TaxStatisticByBranch(APIView):
         return_list = getTaxStatisticByBranch(taxid, branchid)
         return json_format(code = 200, message = "Success", data = return_list)
 
-# thông kê các loại thuế
-
 class StatisticInOutcomeByBranch(APIView):
     def post(self, request, format=None):
         data = request.data
@@ -1287,9 +1285,10 @@ class StatisticInOutcomeByBranch(APIView):
         return_list = dict()
         time_now = datetime.datetime.now()
         y, m = time_now.year, time_now.month
+        tmp_ = {}
         for i in range(1, m+1):
             tmp = getInterestInBranch(branchid, i, y)
-            return_list["%.2d/%.4d" % (i, y)] = tmp
+            tmp_["%.2d/%.4d" % (i, y)] = tmp
         max = None
         min = None
         maxtype = None
@@ -1302,6 +1301,7 @@ class StatisticInOutcomeByBranch(APIView):
             if  min is None or min > return_list[k]['interest']:
                 min = return_list[k]['interest']
                 mintype = k
+        return_list["statistic"] = [{"date" : k, "value" : tmp_[k]} for k in tmp_.keys()]
         return_list['max'] = {'type' : maxtype,
                             'value' : max}
         return_list['min'] = {'type' : mintype,
@@ -1321,20 +1321,21 @@ class SalaryStatistic(APIView):
         min = 99999
         mink = None
         maxk = None
+        tmp_ = {}
         for branch in Branch.objects.all():
-            tmp = salaryStatisticByBranch(branch.id)
-            for k in tmp.keys():
-                if "/" in k:
-                    if k not in return_list.keys():
-                        return_list[k] = tmp[k]
-                    else:
-                        return_list[k] += tmp[k]
-                    if tmp[k] > max:
-                        max = tmp[k]
-                        maxk = k
-                    if tmp[k] < min:
-                        min = tmp[k]
-                        mink = k
+            tmp = salaryStatisticByBranch(branch.id)['statistic']
+            for v in tmp:
+                if v['date'] not in tmp_.keys():
+                    tmp_[v['date']] = v['value']
+                else:
+                    tmp_[v['date']] += v['value']
+                if v['value'] > max:
+                    max = v['value']
+                    maxk = v['date']
+                if v['value'] < min:
+                    min = v['value']
+                    mink = v['date']
+        return_list["statistic"] = [{"date" : k, "value" : tmp_[k]} for k in tmp_.keys()]
         return_list["min"] = {"ammount" : min, "month" : mink}
         return_list["max"] = {"ammount" : max, "month" : maxk}
         return json_format(code = 200, message = "Success", data = return_list)
@@ -1355,19 +1356,20 @@ class StatisticInOutcome(APIView):
             for i in range(1, m+1):
                 tmp_ = getInterestInBranch(branch.id, i, y)
                 tmp["%.2d/%.4d" % (i, y)] = tmp_
+            tmp__ = {}
             for k in tmp.keys():
-                if k not in return_list.keys():
-                    return_list[k] = tmp[k]
+                if k not in tmp__.keys():
+                    tmp__[k] = tmp[k]
                 else:
-                    return_list[k] += tmp[k]
-        for k in return_list.keys():
-            print(return_list[k]['interest'])
-            if max is None or max < return_list[k]['interest']:
-                max = return_list[k]['interest']
+                    tmp__[k] += tmp[k]
+        for k in tmp__.keys():
+            if max is None or max < tmp__[k]['interest']:
+                max = tmp__[k]['interest']
                 maxtype = k
-            if  min is None or min > return_list[k]['interest']:
-                min = return_list[k]['interest']
+            if  min is None or min > tmp__[k]['interest']:
+                min = tmp__[k]['interest']
                 mintype = k
+        return_list["statistic"] = [{"date" : k, "value" : tmp__[k]} for k in tmp__.keys()]
         return_list['max'] = {'type' : maxtype,
                             'value' : max}
         return_list['min'] = {'type' : mintype,
@@ -1387,6 +1389,7 @@ class InvestmentStaistic(APIView):
         minamount = 99999
         minamounttype = None
         maxamounttype = None
+        tmp_ = {}
         for i in range(1, m+1):
             investments = Investmentrec.objects.filter(time__year = y, time__month = i)
             sum = 0
@@ -1394,7 +1397,7 @@ class InvestmentStaistic(APIView):
             for invest in investments:
                 sum += invest.amount
                 income += invest.income
-            return_list["%.2d/%.4d" % (i, y)] = {
+            tmp_["%.2d/%.4d" % (i, y)] = {
                 "amount" : sum,
                 "income" : income
             }
@@ -1410,6 +1413,7 @@ class InvestmentStaistic(APIView):
             if minamount > sum:
                 minamount = sum
                 minamounttype = "%.2d/%.4d" % (i, y)
+        return_list["statistic"] = [{"date" : k, "value" : tmp_[k]} for k in tmp_.keys()]
         return_list['maxincome'] = {'type' : maxincometype,
                             'value' : maxincome}
         return_list['minincome'] = {'type' : minincometype,
@@ -1429,18 +1433,20 @@ class LendStatistic(APIView):
         min = 99999
         mintype = None
         maxtype = None
+        tmp_ = {}
         for i in range(1, m+1):
             lendrecs = Lendrec.objects.filter(time__year = y, time__month = i)
             sum = 0
             for lendrec in lendrecs:
                 sum += lendrec.amount
-            return_list["%.2d/%.4d" % (i, y)] = sum
+            tmp_["%.2d/%.4d" % (i, y)] = sum
             if max < sum:
                 max = sum
                 maxtype = "%.2d/%.4d" % (i, y)
             if min > sum:
                 min = sum
                 mintype = "%.2d/%.4d" % (i, y)
+        return_list["statistic"] = [{"date" : k, "value" : tmp_[k]} for k in tmp_.keys()]
         return_list['max'] = {'type' : maxtype,
                             'value' : max}
         return_list['min'] = {'type' : mintype,
@@ -1456,18 +1462,20 @@ class LoanStatistic(APIView):
         min = 99999
         mintype = None
         maxtype = None
+        tmp_ = {}
         for i in range(1, m+1):
             loanrecs = Loanrec.objects.filter(time__year = y, time__month = i)
             sum = 0
             for loanrec in loanrecs:
                 sum += loanrec.amount
-            return_list["%.2d/%.4d" % (i, y)] = sum
+            tmp_["%.2d/%.4d" % (i, y)] = sum
             if max < sum:
                 max = sum
                 maxtype = "%.2d/%.4d" % (i, y)
             if min > sum:
                 min = sum
                 mintype = "%.2d/%.4d" % (i, y)
+        return_list["statistic"] = [{"date" : k, "value" : tmp_[k]} for k in tmp_.keys()]
         return_list['max'] = {'type' : maxtype,
                             'value' : max}
         return_list['min'] = {'type' : mintype,
@@ -1527,20 +1535,20 @@ class TaxStatistic(APIView):
         mink = None
         maxk = None
         for branch in Branch.objects.all():
-            tmp = getTaxStatisticByBranch(taxid, branch.id)
-            print(tmp)
-            for k in tmp.keys():
-                if "/" in k:
-                    if k not in returndict.keys():
-                        returndict[k] = tmp[k]
-                    else:
-                        returndict[k] += tmp[k]
-                    if tmp[k] > max:
-                        max = tmp[k]
-                        maxk = k
-                    if tmp[k] < min:
-                        min = tmp[k]
-                        mink = k
+            tmp = getTaxStatisticByBranch(taxid, branch.id)['statistic']
+            tmp_ = {}
+            for v in tmp:
+                if v['date'] not in tmp_.keys():
+                    tmp_[v['date']] = v['value']
+                else:
+                    tmp_[v['date']] += v['value']
+                if v['value'] > max:
+                    max = v['value']
+                    maxk = v['date']
+                if v['value'] < min:
+                    min = v['value']
+                    mink = v['date']
+            returndict["statistic"] = [{"date" : k, "value" : tmp_[k]} for k in tmp_.keys()]
         returndict["min"] = {"ammount" : min, "month" : mink}
         returndict["max"] = {"ammount" : max, "month" : maxk}
         return json_format(code = 200, message = "Success", data=returndict)
@@ -1554,19 +1562,20 @@ class AllTaxStatistic(APIView):
         mink = None
         maxk = None
         for branch in Branch.objects.all():
-            tmp = getAllTaxByBranch(branch.id)
-            for k in tmp.keys():
-                if "/" in k:
-                    if k not in returndict.keys():
-                        returndict[k] = tmp[k]
-                    else:
-                        returndict[k] += tmp[k]
-                    if tmp[k] > max:
-                        max = tmp[k]
-                        maxk = k
-                    if tmp[k] < min:
-                        min = tmp[k]
-                        mink = k
+            tmp = getAllTaxByBranch(branch.id)['statistic']
+            tmp_ = {}
+            for v in tmp:
+                if v['date'] not in tmp_.keys():
+                    tmp_[v['date']] = v['value']
+                else:
+                    tmp_[v['date']] += v['value']
+                if v['value'] > max:
+                    max = v['value']
+                    maxk = v['date']
+                if v['value'] < min:
+                    min = v['value']
+                    mink = v['date']
+            returndict["statistic"] = [{"date" : k, "value" : tmp_[k]} for k in tmp_.keys()]
         returndict["min"] = {"ammount" : min, "month" : mink}
         returndict["max"] = {"ammount" : max, "month" : maxk}
         return json_format(code = 200, message = "Success", data=returndict)
