@@ -624,7 +624,7 @@ class AddLendPaying(APIView):
         lendpaying.payingamount = data['payingamount']
         lendrec.remaining = lendpaying.payingamount - lendpaying.interestamount + lendrec.remaining
         lendrec.save()
-        lendpaying.time = datetime.datetime.now()
+        lendpaying.time = datetime.datetime.strptime(data['time'], "%d/%m/%Y")
         lendpaying.payment = data['payment']
         lendpaying.save()
         return json_format(code = 200, message = "Success")
@@ -648,7 +648,7 @@ class AddLoanPaying(APIView):
         loanpaying.payingamount = data['payingamount']
         loanrec.remaining = loanpaying.payingamount - loanpaying.interestamount + loanrec.remaining
         loanrec.save()
-        loanpaying.time = datetime.datetime.now()
+        loanpaying.time = datetime.datetime.strptime(data['time'], "%d/%m/%Y")
         loanpaying.payment = data['payment']
         loanpaying.save()
         return json_format(code = 200, message = "Success")
@@ -932,7 +932,7 @@ class AddSalary(APIView):
             else:
                 index = 0
             id = randomDigits(8, index)
-            salary_tables_id.id = id
+            salaryTable.id = id
             salaryTable.note = ""
             salaryTable.startdate = start_date
             salaryTable.enddate = end_date
