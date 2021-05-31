@@ -28,7 +28,7 @@ urlpatterns = [
     path('signin', SigninViews.as_view(), name = "signin"),
     path('create_acc', CreateAccount.as_view(), name = "create_acc"),
     path('getusers', ListUsers.as_view(), name = "listuser"),
-    path('edit', EditInfo.as_view(), name = "editinfo"),
+    path('edit_info', EditInfo.as_view(), name = "editinfo"),
     path('delete_acc', DeleteAcc.as_view(), name = "delete_acc"),
 
     # product
