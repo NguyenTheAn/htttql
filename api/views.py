@@ -387,7 +387,13 @@ class AddBuyBill(APIView):
             amount += (price*num)
         doc = Document()
         doc.accountantuserid = user
-        doc.id = randomDigits(8, len(Document.objects.all()))
+        docids = [int(doc_.id) for doc_ in Document.objects.all()]
+        if len(docids) != 0:
+            index = max(docids) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        doc.id = id
         doc.type = "bill"
         # doc.time = datetime.datetime.now()
         doc.time = datetime.datetime.strptime(data['time'], "%d/%m/%Y")
@@ -473,7 +479,13 @@ class AddSellBill(APIView):
         
         doc = Document()
         doc.accountantuserid = user
-        doc.id = randomDigits(8, len(Document.objects.all()))
+        docids = [int(doc_.id) for doc_ in Document.objects.all()]
+        if len(docids) != 0:
+            index = max(docids) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        doc.id = id
         doc.type = "bill"
         doc.time = datetime.datetime.now()
         doc.name = data["name"]
@@ -902,7 +914,7 @@ class AddSalary(APIView):
                               salary.reward,
                               salary.employeeid.taxid.percentage/100)
         salary_tables = [salary_table for salary_table in Salarytable.objects.all()]
-        salary_tables_id = [salary_table.id for salary_table in salary_tables]
+        salary_tables_id = [int(salary_table.id) for salary_table in salary_tables]
         exist_salary_table = False
         for salary_table in salary_tables:
             if (start_date == salary_table.startdate) and (end_date == salary_table.enddate):
@@ -914,11 +926,13 @@ class AddSalary(APIView):
 
         if not exist_salary_table:
             salaryTable = Salarytable()
-            while True:
-                id = randomDigits(8, len(salary_tables))
-                if id not in salary_tables_id:
-                    salaryTable.id = id
-                    break
+            
+            if len(salary_tables_id) != 0:
+                index = max(salary_tables_id) - 10000000 + 1
+            else:
+                index = 0
+            id = randomDigits(8, index)
+            salary_tables_id.id = id
             salaryTable.note = ""
             salaryTable.startdate = start_date
             salaryTable.enddate = end_date
@@ -1268,7 +1282,13 @@ class AddReceipt(APIView):
 
         document = Document()
         document.accountantuserid = user    
-        document.id = randomDigits(8, len(Document.objects.all()))
+        docids = [int(doc_.id) for doc_ in Document.objects.all()]
+        if len(docids) != 0:
+            index = max(docids) - 10000000 + 1
+        else:
+            index = 0
+        id = randomDigits(8, index)
+        document.id = id
         document.type = "receipt"
         document.time = datetime.datetime.strptime(data['time'], "%d/%m/%Y")
         document.name = data["name"]
