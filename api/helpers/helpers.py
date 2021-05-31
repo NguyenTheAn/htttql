@@ -395,6 +395,7 @@ def getInterestInBranch(branchid, month, year):
     data = {}
     interest = 0
     s = 0
+    tncn = 0
     for salary in salaries:
         total = computeSalary(salary.employeeid.salarydefault,
                                         salary.workingday,
@@ -402,6 +403,7 @@ def getInterestInBranch(branchid, month, year):
                                         salary.fine,
                                         salary.reward,
                                         salary.employeeid.taxid.percentage/100)
+        tncn += (salary.employeeid.taxid.percentage/100)*total
         interest -= total
         s += total
     data['salary'] = s
@@ -424,6 +426,7 @@ def getInterestInBranch(branchid, month, year):
         gtgt += tax_pay
     data['sellbill'] = s
     data['gtgt'] = gtgt
+    data['tncn'] = tncn
     data['interest'] = interest
     return data
 
@@ -566,4 +569,5 @@ def getAllTaxByBranch(branchid):
     return return_list
 
 def computeSalary(salaryDefault, workingDay, workingDayPerMonth, fine, reward, tax):
-    return (salaryDefault * workingDay / workingDayPerMonth  + reward - fine) * (1 - tax)
+    tota = (salaryDefault * workingDay / workingDayPerMonth  + reward - fine)
+    return tota * (1 - tax)
