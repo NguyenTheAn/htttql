@@ -524,7 +524,8 @@ class GetSellBill(APIView):
                 "cusaddress": bill.cusaddress,
                 "cusphone": bill.cusphone,
                 "payment": bill.payment,
-                "amount": bill.documentid.amount
+                "amount": bill.documentid.amount,
+                "tax" : getTax(bill.taxid.id)
             }
             for product_bill in product_bills:
                 product = product_bill.productid
