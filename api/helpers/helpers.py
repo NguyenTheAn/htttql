@@ -413,12 +413,12 @@ def getInterestInBranch(branchid, month, year):
     s = 0
     for buybill in buybills:
         interest -= buybill.documentid.amount
-        s += buybill.documentid.amount
+        s -= buybill.documentid.amount
     data['buybill'] = s
     s = 0
     gtgt = 0
     for sellbill in sellbills:
-        interest -= sellbill.documentid.amount
+        interest += sellbill.documentid.amount
         s += sellbill.documentid.amount
         tax_pay = sellbill.documentid.amount * sellbill.taxid.percentage / 100.0
         gtgt += tax_pay
