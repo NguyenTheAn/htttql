@@ -1097,7 +1097,11 @@ class SummaryBuyProduct(APIView):
         data = request.data
         products = getProduct()
         return_data = {}
+        time_now = datetime.datetime.now()
+        y, m = time_now.year, time_now.month
         month_bills = {}
+        for i in range(1, m+1):
+            month_bills["%.2d/%.4d" % (i, y)] = 0
         for product in products:
             product_buy_bills = ProductBuyBill.objects.filter(productid=product['product_id'])
             for bill in product_buy_bills:
@@ -1105,8 +1109,6 @@ class SummaryBuyProduct(APIView):
                 time = document.time.strftime("%m/%Y")
                 if time in month_bills.keys():
                     month_bills[time] += document.amount * product['inprice']
-                else:
-                    month_bills[time] = document.amount * product['inprice']
         min = 1e20
         max = -1
         min_month = None
@@ -1135,7 +1137,11 @@ class SummaryBuyProductByBranch(APIView):
         data = request.data
         products = [product for product in Product.objects.filter(branchid__id=data['branchid'])]
         return_data = {}
+        time_now = datetime.datetime.now()
+        y, m = time_now.year, time_now.month
         month_bills = {}
+        for i in range(1, m+1):
+            month_bills["%.2d/%.4d" % (i, y)] = 0
         for product in products:
             product_buy_bills = ProductBuyBill.objects.filter(productid=product.id)
             for bill in product_buy_bills:
@@ -1143,8 +1149,6 @@ class SummaryBuyProductByBranch(APIView):
                 time = document.time.strftime("%m/%Y")
                 if time in month_bills.keys():
                     month_bills[time] += document.amount * product.inprice
-                else:
-                    month_bills[time] = document.amount * product.inprice
         min = 1e20
         max = -1
         min_month = None
@@ -1173,7 +1177,11 @@ class SummarySellProduct(APIView):
         data = request.data
         products = getProduct()
         return_data = {}
+        time_now = datetime.datetime.now()
+        y, m = time_now.year, time_now.month
         month_bills = {}
+        for i in range(1, m+1):
+            month_bills["%.2d/%.4d" % (i, y)] = 0
         for product in products:
             product_sell_bills = ProductSellBill.objects.filter(productid=product['product_id'])
             for bill in product_sell_bills:
@@ -1181,8 +1189,6 @@ class SummarySellProduct(APIView):
                 time = document.time.strftime("%m/%Y")
                 if time in month_bills.keys():
                     month_bills[time] += document.amount * product['outprice']
-                else:
-                    month_bills[time] = document.amount * product['outprice']
         min = 1e20
         max = -1
         min_month = None
@@ -1212,7 +1218,11 @@ class SummarySellProductByBranch(APIView):
         products = Product.objects.filter(branchid__id=data['branchid'])
         return_data = {}
 
+        time_now = datetime.datetime.now()
+        y, m = time_now.year, time_now.month
         month_bills = {}
+        for i in range(1, m+1):
+            month_bills["%.2d/%.4d" % (i, y)] = 0
         for product in products:
             product_sell_bills = ProductSellBill.objects.filter(productid=product.id)
             for bill in product_sell_bills:
@@ -1220,8 +1230,6 @@ class SummarySellProductByBranch(APIView):
                 time = document.time.strftime("%m/%Y")
                 if time in month_bills.keys():
                     month_bills[time] += document.amount * product.outprice
-                else:
-                    month_bills[time] = document.amount * product.outprice
         
         min = 1e20
         max = -1
@@ -1302,14 +1310,16 @@ class SummaryReceipt(APIView):
         return_data = {}
 
         receipts = [receipt for receipt in Receipt.objects.all()]
+        time_now = datetime.datetime.now()
+        y, m = time_now.year, time_now.month
         month_receipt = {}
+        for i in range(1, m+1):
+            month_receipt["%.2d/%.4d" % (i, y)] = 0
         for receipt in receipts:
             document = receipt.documentid
             time = document.time.strftime("%m/%Y")
             if time in month_receipt.keys():
                 month_receipt[time] += document.amount
-            else:
-                month_receipt[time] = document.amount
 
         min = 1e20
         max = -1
@@ -1340,14 +1350,16 @@ class SummaryReceiptByBranch(APIView):
         return_data = {}
 
         receipts = [receipt for receipt in Receipt.objects.filter(documentid__accountantuserid__branchid=data['branchid'])]
+        time_now = datetime.datetime.now()
+        y, m = time_now.year, time_now.month
         month_receipt = {}
+        for i in range(1, m+1):
+            month_receipt["%.2d/%.4d" % (i, y)] = 0
         for receipt in receipts:
             document = receipt.documentid
             time = document.time.strftime("%m/%Y")
             if time in month_receipt.keys():
                 month_receipt[time] += document.amount
-            else:
-                month_receipt[time] = document.amount
 
         min = 1e20
         max = -1
