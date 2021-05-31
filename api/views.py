@@ -5,7 +5,7 @@ from .models import *
 from .helpers.common import *
 import datetime
 import numpy as np
-from calendar import monthrange
+from calendar import month_name, monthrange
 from .helpers.helpers import *
 
 # bo he so luong, them tong tien luong luc get luong
@@ -1097,10 +1097,9 @@ class SummaryBuyProduct(APIView):
         data = request.data
         products = getProduct()
         return_data = {}
-
+        month_bills = {}
         for product in products:
             product_buy_bills = ProductBuyBill.objects.filter(productid=product['product_id'])
-            month_bills = {}
             for bill in product_buy_bills:
                 document = bill.buybilldocumentid.documentid
                 time = document.time.strftime("%m/%Y")
@@ -1108,7 +1107,25 @@ class SummaryBuyProduct(APIView):
                     month_bills[time] += document.amount * product['inprice']
                 else:
                     month_bills[time] = document.amount * product['inprice']
-            return_data[product['product_id']] = [month_bills, getProduct(product['product_id'])]
+        min = 1e20
+        max = -1
+        min_month = None
+        max_month = None
+        statistic = []
+        for month, total in month_bills.items():
+            statistic.append({"data": month,
+                              "value": total})
+            if total < min:
+                min = total
+                min_month = month
+            if total > max:
+                max = total
+                max_month = month
+        return_data['statistic'] = statistic
+        return_data['max'] = {"data": max_month,
+                              "value": max}
+        return_data['min'] = {"data": min_month,
+                              "value": min}
 
 
         return json_format(code = 200, message = "Success", data = return_data)
@@ -1118,10 +1135,9 @@ class SummaryBuyProductByBranch(APIView):
         data = request.data
         products = [product for product in Product.objects.filter(branchid__id=data['branchid'])]
         return_data = {}
-
+        month_bills = {}
         for product in products:
             product_buy_bills = ProductBuyBill.objects.filter(productid=product.id)
-            month_bills = {}
             for bill in product_buy_bills:
                 document = bill.buybilldocumentid.documentid
                 time = document.time.strftime("%m/%Y")
@@ -1129,7 +1145,25 @@ class SummaryBuyProductByBranch(APIView):
                     month_bills[time] += document.amount * product.inprice
                 else:
                     month_bills[time] = document.amount * product.inprice
-            return_data[product.id] = [month_bills, getProduct(product.id)]
+        min = 1e20
+        max = -1
+        min_month = None
+        max_month = None
+        statistic = []
+        for month, total in month_bills.items():
+            statistic.append({"data": month,
+                              "value": total})
+            if total < min:
+                min = total
+                min_month = month
+            if total > max:
+                max = total
+                max_month = month
+        return_data['statistic'] = statistic
+        return_data['max'] = {"data": max_month,
+                              "value": max}
+        return_data['min'] = {"data": min_month,
+                              "value": min}
 
 
         return json_format(code = 200, message = "Success", data = return_data)
@@ -1139,10 +1173,9 @@ class SummarySellProduct(APIView):
         data = request.data
         products = getProduct()
         return_data = {}
-
+        month_bills = {}
         for product in products:
             product_sell_bills = ProductSellBill.objects.filter(productid=product['product_id'])
-            month_bills = {}
             for bill in product_sell_bills:
                 document = bill.sellbilldocumentid.documentid
                 time = document.time.strftime("%m/%Y")
@@ -1150,7 +1183,25 @@ class SummarySellProduct(APIView):
                     month_bills[time] += document.amount * product['outprice']
                 else:
                     month_bills[time] = document.amount * product['outprice']
-            return_data[product['product_id']] = [month_bills, getProduct(product['product_id'])]
+        min = 1e20
+        max = -1
+        min_month = None
+        max_month = None
+        statistic = []
+        for month, total in month_bills.items():
+            statistic.append({"data": month,
+                              "value": total})
+            if total < min:
+                min = total
+                min_month = month
+            if total > max:
+                max = total
+                max_month = month
+        return_data['statistic'] = statistic
+        return_data['max'] = {"data": max_month,
+                              "value": max}
+        return_data['min'] = {"data": min_month,
+                              "value": min}
 
 
         return json_format(code = 200, message = "Success", data = return_data)
@@ -1161,9 +1212,9 @@ class SummarySellProductByBranch(APIView):
         products = Product.objects.filter(branchid__id=data['branchid'])
         return_data = {}
 
+        month_bills = {}
         for product in products:
             product_sell_bills = ProductSellBill.objects.filter(productid=product.id)
-            month_bills = {}
             for bill in product_sell_bills:
                 document = bill.sellbilldocumentid.documentid
                 time = document.time.strftime("%m/%Y")
@@ -1171,7 +1222,28 @@ class SummarySellProductByBranch(APIView):
                     month_bills[time] += document.amount * product.outprice
                 else:
                     month_bills[time] = document.amount * product.outprice
-            return_data[product.id] = [month_bills, getProduct(product.id)]
+        
+        min = 1e20
+        max = -1
+        min_month = None
+        max_month = None
+        statistic = []
+        for month, total in month_bills.items():
+            statistic.append({"data": month,
+                              "value": total})
+            if total < min:
+                min = total
+                min_month = month
+            if total > max:
+                max = total
+                max_month = month
+        return_data['statistic'] = statistic
+        return_data['max'] = {"data": max_month,
+                              "value": max}
+        return_data['min'] = {"data": min_month,
+                              "value": min}
+
+        # return_data[product.id] = [month_bills, getProduct(product.id)]
 
 
         return json_format(code = 200, message = "Success", data = return_data)
@@ -1189,7 +1261,7 @@ class AddReceipt(APIView):
         document.accountantuserid = user    
         document.id = randomDigits(8, len(Document.objects.all()))
         document.type = "receipt"
-        document.time = datetime.datetime.now()
+        document.time = datetime.datetime.strptime(data['time'], "%d/%m/%Y")
         document.name = data["name"]
         document.content = data['content']
         document.amount = data['amount']
@@ -1227,21 +1299,37 @@ class GetReceipt(APIView):
 class SummaryReceipt(APIView):
     def post(self, request, format=None):
         data = request.data
-        receipts = getReceipt()
-        receipt_types = list(set([receipt['receipttype'] for receipt in receipts]))
         return_data = {}
 
-        for receipttype in receipt_types:
-            receipts_per_type = [receipt for receipt in Receipt.objects.filter(receipttype=receipttype)]
-            month_receipt = {}
-            for receipt in receipts_per_type:
-                document = receipt.documentid
-                time = document.time.strftime("%m/%Y")
-                if time in month_receipt.keys():
-                    month_receipt[time] += document.amount
-                else:
-                    month_receipt[time] = document.amount
-            return_data[receipttype] = month_receipt
+        receipts = [receipt for receipt in Receipt.objects.all()]
+        month_receipt = {}
+        for receipt in receipts:
+            document = receipt.documentid
+            time = document.time.strftime("%m/%Y")
+            if time in month_receipt.keys():
+                month_receipt[time] += document.amount
+            else:
+                month_receipt[time] = document.amount
+
+        min = 1e20
+        max = -1
+        min_month = None
+        max_month = None
+        statistic = []
+        for month, total in month_receipt.items():
+            statistic.append({"data": month,
+                              "value": total})
+            if total < min:
+                min = total
+                min_month = month
+            if total > max:
+                max = total
+                max_month = month
+        return_data['statistic'] = statistic
+        return_data['max'] = {"data": max_month,
+                              "value": max}
+        return_data['min'] = {"data": min_month,
+                              "value": min}
 
 
         return json_format(code = 200, message = "Success", data = return_data)
@@ -1249,21 +1337,37 @@ class SummaryReceipt(APIView):
 class SummaryReceiptByBranch(APIView):
     def post(self, request, format=None):
         data = request.data
-        receipts = getReceipt()
-        receipt_types = list(set([receipt['receipttype'] for receipt in receipts]))
         return_data = {}
 
-        for receipttype in receipt_types:
-            receipts_per_type = [receipt for receipt in Receipt.objects.filter(receipttype=receipttype, documentid__accountantuserid__branchid=data['branchid'])]
-            month_receipt = {}
-            for receipt in receipts_per_type:
-                document = receipt.documentid
-                time = document.time.strftime("%m/%Y")
-                if time in month_receipt.keys():
-                    month_receipt[time] += document.amount
-                else:
-                    month_receipt[time] = document.amount
-            return_data[receipttype] = month_receipt
+        receipts = [receipt for receipt in Receipt.objects.filter(documentid__accountantuserid__branchid=data['branchid'])]
+        month_receipt = {}
+        for receipt in receipts:
+            document = receipt.documentid
+            time = document.time.strftime("%m/%Y")
+            if time in month_receipt.keys():
+                month_receipt[time] += document.amount
+            else:
+                month_receipt[time] = document.amount
+
+        min = 1e20
+        max = -1
+        min_month = None
+        max_month = None
+        statistic = []
+        for month, total in month_receipt.items():
+            statistic.append({"data": month,
+                              "value": total})
+            if total < min:
+                min = total
+                min_month = month
+            if total > max:
+                max = total
+                max_month = month
+        return_data['statistic'] = statistic
+        return_data['max'] = {"data": max_month,
+                              "value": max}
+        return_data['min'] = {"data": min_month,
+                              "value": min}
 
 
         return json_format(code = 200, message = "Success", data = return_data)
